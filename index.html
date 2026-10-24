@@ -338,7 +338,7 @@
 
   // 기기 기본 음성이 낮고 거친 남성 음성인 경우가 많아, 아이에게 맞는 음성을 이름으로 우선 고릅니다.
   var PREFERRED = {
-    en: ['Samantha', 'Karen', 'Moira', 'Tessa', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Zira', 'Ava', 'Allison', 'Susan', 'Zoe', 'Nicky'],
+    en: ['Ava', 'Samantha', 'Karen', 'Moira', 'Tessa', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Zira', 'Allison', 'Susan', 'Zoe', 'Nicky'],
     ko: ['Yuna', 'Google 한국의', 'Microsoft SunHi', 'Microsoft Heami', 'Sora', 'Jian']
   };
   var AVOID = /fred|albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|jester|organ|trinoids|whisper|wobble|zarvox|junior|ralph|rocko|grandpa|grandma|eddy|flo|reed|sandy|shelley|hysterical|superstar/i;
@@ -348,8 +348,14 @@
     var all = speechSynthesis.getVoices(); if (!all.length) return null;
     var key = lang.slice(0, 2), prefs = PREFERRED[key] || [];
     var same = all.filter(function (v) { return v.lang.replace('_', '-').toLowerCase().indexOf(key) === 0; });
-    var v = null;
-    for (var i = 0; i < prefs.length && !v; i++) v = same.filter(function (x) { return x.name.indexOf(prefs[i]) === 0; })[0];
+    // 1) 기기 설정에서 사용자가 고른 기본 음성을 먼저 존중 (이상한 특수 음성만 제외)
+    var v = same.filter(function (x) { return x.default && !AVOID.test(x.name); })[0];
+    // 2) 없으면 이름 목록 순서로. 같은 이름이 여러 개면 '향상된/프리미엄' 버전 우선
+    for (var i = 0; i < prefs.length && !v; i++) {
+      var c = same.filter(function (x) { return x.name.indexOf(prefs[i]) === 0; });
+      c.sort(function (a, b) { return /premium|enhanced|향상|프리미엄/i.test(b.name) - /premium|enhanced|향상|프리미엄/i.test(a.name); });
+      v = c[0];
+    }
     if (!v) v = same.filter(function (x) { return !AVOID.test(x.name) && x.lang.toLowerCase() === lang.toLowerCase(); })[0];
     if (!v) v = same.filter(function (x) { return !AVOID.test(x.name); })[0];
     if (v) voiceCache[lang] = v;
