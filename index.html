@@ -190,7 +190,7 @@
     <div class="howto">
       <span class="k"><b>1</b>게임을 고르고 아이에게 넘겨주세요</span>
       <span class="k"><b>2</b>게임 안에는 메뉴·글자가 없습니다</span>
-      <span class="k"><b>🏠</b>오른쪽 위 버튼을 2초 누르면 돌아옵니다</span>
+      <span class="k"><b>🏠</b>오른쪽 위 버튼을 누르면 메뉴로 돌아옵니다</span>
       <span class="k"><b>3′</b>첫 터치 후 3분이면 저절로 끝납니다</span>
     </div>
 
@@ -308,6 +308,13 @@
       return audioCtx;
     } catch (e) { return null; }
   }
+  function unlockAudio() {
+    var c = ctx();
+    if (c) { try { var b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) {} }
+    try {
+      if ('speechSynthesis' in window) { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = LANG; speechSynthesis.speak(u); }
+    } catch (e) {}
+  }
   function popSound() {
     var c = ctx(); if (!c) return;
     var len = Math.floor(c.sampleRate * 0.1), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
@@ -329,12 +336,34 @@
   function blip() { tone(660, 0, 0.15); }
   function jingle() { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.35); }); }
 
+  // 기기 기본 음성이 낮고 거친 남성 음성인 경우가 많아, 아이에게 맞는 음성을 이름으로 우선 고릅니다.
+  var PREFERRED = {
+    en: ['Samantha', 'Karen', 'Moira', 'Tessa', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Microsoft Zira', 'Ava', 'Allison', 'Susan', 'Zoe', 'Nicky'],
+    ko: ['Yuna', 'Google 한국의', 'Microsoft SunHi', 'Microsoft Heami', 'Sora', 'Jian']
+  };
+  var AVOID = /fred|albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|good news|jester|organ|trinoids|whisper|wobble|zarvox|junior|ralph|rocko|grandpa|grandma|eddy|flo|reed|sandy|shelley|hysterical|superstar/i;
+  var voiceCache = {};
+  function pickVoice(lang) {
+    if (voiceCache[lang]) return voiceCache[lang];
+    var all = speechSynthesis.getVoices(); if (!all.length) return null;
+    var key = lang.slice(0, 2), prefs = PREFERRED[key] || [];
+    var same = all.filter(function (v) { return v.lang.replace('_', '-').toLowerCase().indexOf(key) === 0; });
+    var v = null;
+    for (var i = 0; i < prefs.length && !v; i++) v = same.filter(function (x) { return x.name.indexOf(prefs[i]) === 0; })[0];
+    if (!v) v = same.filter(function (x) { return !AVOID.test(x.name) && x.lang.toLowerCase() === lang.toLowerCase(); })[0];
+    if (!v) v = same.filter(function (x) { return !AVOID.test(x.name); })[0];
+    if (v) voiceCache[lang] = v;
+    return v;
+  }
+  try { speechSynthesis.onvoiceschanged = function () { voiceCache = {}; }; } catch (e) {}
+
   function speak(text, rate, lang) {
     try {
       if (!('speechSynthesis' in window)) return;
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = lang || LANG; u.rate = rate || 0.9; u.pitch = 1.15;
+      u.lang = lang || LANG; u.rate = rate || 0.9; u.pitch = 1.1;
+      var v = pickVoice(u.lang); if (v) u.voice = v;
       speechSynthesis.speak(u);
     } catch (e) {}
   }
@@ -544,18 +573,12 @@
   // ---------- 메뉴·종료 ----------
   screens.menu.addEventListener('click', function (e) {
     var t = e.target.closest('.tile'); if (!t) return;
-    ctx(); try { speechSynthesis.cancel(); } catch (x) {}   // 첫 사용자 동작으로 소리 잠금 해제
+    unlockAudio();   // 첫 사용자 동작으로 iOS 소리 잠금 해제
     start(t.dataset.g);
   });
-  var holdT = null;
-  exitPad.addEventListener('pointerdown', function (e) {
-    e.preventDefault(); e.stopPropagation();
-    exitPad.classList.add('holding');
-    holdT = setTimeout(function () { exitPad.classList.remove('holding'); backToMenu(); }, 2000);
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(function (ev) {
-    exitPad.addEventListener(ev, function () { clearTimeout(holdT); exitPad.classList.remove('holding'); });
-  });
+  exitPad.addEventListener('pointerdown', function (e) { e.preventDefault(); e.stopPropagation(); backToMenu(); });
+  var unlocked = false;
+  document.addEventListener('touchend', function () { if (!unlocked) { unlocked = true; unlockAudio(); } }, { passive: true });
   document.addEventListener('touchmove', function (e) { if (current) e.preventDefault(); }, { passive: false });
   document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
   document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
