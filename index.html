@@ -121,13 +121,32 @@
   .pad.lit .pk { animation: pop .35s ease-out; }
   .pk { display: inline-block; line-height: 1; }
 
-  /* 3·4 두 개 중 고르기 */
+  /* 0 쎄쎄쎄 */
+  #g0 { background: #fff3c4; }
+  #hands { width: min(80vw, 70vh); max-width: 100%; height: auto; display: block; }
+  .hand { transform-origin: 50% 90%; transition: transform .12s ease-out; }
+  .hand.left  { transform: translateX(-120px) rotate(-18deg); }
+  .hand.right { transform: translateX(120px) rotate(18deg); }
+  #hands.clap .hand.left  { transform: translateX(-10px) rotate(-4deg); }
+  #hands.clap .hand.right { transform: translateX(10px) rotate(4deg); }
+  #hands.clap { animation: shake .25s ease-out; }
+  @keyframes shake { 0%{transform:scale(1)} 40%{transform:scale(1.08)} 100%{transform:scale(1)} }
+
+  /* 3·4 두 개 중 고르기 — 위는 작게, 아래 선택지가 화면을 지배 */
   .choose { flex-direction: column; }
-  .target { flex: 0 0 38%; display: flex; align-items: center; justify-content: center; width: 100%; font-size: min(26vw, 30vh); background: rgba(255,255,255,.55); }
-  .options { flex: 1; display: flex; width: 100%; }
-  .opt { flex: 1; display: flex; align-items: center; justify-content: center; font-size: min(26vw, 30vh); }
+  .target { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; width: 100%; font-size: min(12vw, 14vh); background: rgba(255,255,255,.55); }
+  .options { flex: 1; display: flex; width: 100%; gap: 3vw; padding: 2vh 3vw 3vh; box-sizing: border-box; }
+  .opt { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; font-size: min(30vw, 40vh);
+         border-radius: 5vmin; border: 1.2vmin solid rgba(0,0,0,.08); }
   .opt:first-child { background: #ffe9e9; } .opt:last-child { background: #e6f1ff; }
-  .speaker { font-size: min(26vw, 30vh); }
+  .options.hint .opt { animation: nudge 1.6s ease-in-out infinite; }
+  .options.hint .opt:last-child { animation-delay: .8s; }
+  @keyframes nudge { 0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,200,61,0); } 50% { transform: scale(1.04); box-shadow: 0 0 0 1.5vmin rgba(255,200,61,.55); } }
+  .options.hint .opt::after { content: "👆"; position: absolute; bottom: 3vh; left: 50%; font-size: min(10vw, 11vh); line-height: 1;
+         transform: translateX(-50%); animation: tapbounce 1.6s ease-in-out infinite; }
+  .options.hint .opt:last-child::after { animation-delay: .8s; }
+  @keyframes tapbounce { 0%,100% { transform: translateX(-50%) translateY(0); opacity: .35; } 50% { transform: translateX(-50%) translateY(-2.5vh); opacity: 1; } }
+  .speaker { font-size: min(12vw, 14vh); }
 
   /* 6 하나씩 담기 */
   #g6 { background: #fff9ea; gap: 4vw; flex-wrap: wrap; padding: 4vw; box-sizing: border-box; }
@@ -135,9 +154,12 @@
   .plate.full { border-color: var(--b3); }
 
   /* 7 쌓기 */
-  #g7 { background: linear-gradient(#e8f6ff, #fdf6dc); align-items: flex-end; }
-  #stack { display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 6vh; }
+  #g7 { background: linear-gradient(#e8f6ff, #fdf6dc); }
+  #stack { position: absolute; inset: 0; display: flex; flex-direction: column-reverse; align-items: center; justify-content: flex-start; padding-bottom: 6vh; box-sizing: border-box; }
   .block { width: 40vmin; height: 8vh; border-radius: 10px; border: 3px solid rgba(0,0,0,.15); box-sizing: border-box; animation: pop .4s ease-out; }
+  #digit { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: "Fredoka", var(--font); font-weight: 700; font-size: min(60vw, 75vh); line-height: 1; }
+  #items { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(5, 1fr); grid-template-rows: repeat(2, 1fr); align-items: center; justify-items: center; padding: 6vh 4vw; box-sizing: border-box; }
+  #items span { font-size: min(14vw, 24vh); line-height: 1; animation: pop .4s ease-out; }
 
   /* 9 내 이름 */
   #g9 { background: #fff0f6; }
@@ -161,7 +183,7 @@
     <div class="hero">
       <div>
         <h1><span>E</span><span>l</span><span>l</span><span>a</span>'s Games</h1>
-        <p class="sub">엘라를 위한 놀이 8가지 · 한 번에 하나씩</p>
+        <p class="sub">엘라를 위한 놀이 9가지 · 한 번에 하나씩</p>
       </div>
     </div>
 
@@ -175,6 +197,7 @@
     <div class="group">
       <h2>인과관계</h2>
       <div class="tiles">
+        <button class="tile" data-g="g0" style="--c: var(--b1)"><span class="ico">👏</span><span class="nm">쎄쎄쎄</span><span class="st">어디를 쳐도 손뼉이 짝 하고 노래가 한 소절씩 이어져요.</span><span class="en">Clap</span></button>
         <button class="tile" data-g="g1" style="--c: var(--b4)"><span class="ico">🎈</span><span class="nm">풍선 터뜨리기</span><span class="st">올라오는 풍선을 치면 터져요. 움직이는 것을 겨냥하는 연습.</span><span class="en">Pop</span></button>
         <button class="tile" data-g="g2" style="--c: var(--b2)"><span class="ico">🎹</span><span class="nm">큰 피아노</span><span class="st">네 칸을 치면 칸마다 다른 소리가 나요. 어디를 치느냐가 달라지는 연습.</span><span class="en">Big piano</span></button>
       </div>
@@ -192,7 +215,7 @@
       <h2>수 전단계</h2>
       <div class="tiles">
         <button class="tile" data-g="g6" style="--c: var(--b2)"><span class="ico">🍪</span><span class="nm">하나씩 담기</span><span class="st">접시마다 과자 하나. 다 채우면 끝. 1:1 대응.</span><span class="en">One each</span></button>
-        <button class="tile" data-g="g7" style="--c: var(--b3)"><span class="ico">🧱</span><span class="nm">치는 만큼 쌓기</span><span class="st">칠 때마다 블록이 쌓이고 one, two, three… 열까지.</span><span class="en">Count</span></button>
+        <button class="tile" data-g="g7" style="--c: var(--b3)"><span class="ico">🧱</span><span class="nm">치는 만큼 쌓기</span><span class="st">칠 때마다 하나씩 늘며 one, two… 열까지. 판마다 블록 → 큰 숫자 → 딸기로 모습이 바뀌어요.</span><span class="en">Count</span></button>
       </div>
     </div>
 
@@ -206,6 +229,21 @@
 
     <p class="foot">아이에게 들리는 말과 글자는 영어입니다. 그림은 임시로 이모지, 소리는 기기 음성입니다. 사진과 녹음을 주시면 교체합니다.</p>
   </div>
+</div>
+
+<div id="g0" class="screen game" hidden>
+  <svg id="hands" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g class="hand left">
+      <rect x="150" y="230" width="100" height="70" rx="20" fill="#4f8ef7"/>
+      <path d="M150 240 C150 190 150 150 160 130 C165 118 185 118 190 130 L190 170 L190 110 C190 96 210 96 212 110 L214 170 L216 100 C218 86 238 86 240 100 L240 170 L242 118 C244 104 262 104 262 118 L262 190 C262 230 250 250 200 250 Z" fill="#ffb48a" stroke="#d97a4a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M150 190 C130 170 125 150 140 142 C150 138 160 150 162 170" fill="#ffb48a" stroke="#d97a4a" stroke-width="6" stroke-linejoin="round"/>
+    </g>
+    <g class="hand right">
+      <rect x="150" y="230" width="100" height="70" rx="20" fill="#f05a8e"/>
+      <path d="M250 240 C250 190 250 150 240 130 C235 118 215 118 210 130 L210 170 L210 110 C210 96 190 96 188 110 L186 170 L184 100 C182 86 162 86 160 100 L160 170 L158 118 C156 104 138 104 138 118 L138 190 C138 230 150 250 200 250 Z" fill="#ffb48a" stroke="#d97a4a" stroke-width="6" stroke-linejoin="round"/>
+      <path d="M250 190 C270 170 275 150 260 142 C250 138 240 150 238 170" fill="#ffb48a" stroke="#d97a4a" stroke-width="6" stroke-linejoin="round"/>
+    </g>
+  </svg>
 </div>
 
 <div id="g1" class="screen game" hidden></div>
@@ -229,7 +267,7 @@
 
 <div id="g6" class="screen game" hidden></div>
 
-<div id="g7" class="screen game" hidden><div id="stack"></div></div>
+<div id="g7" class="screen game" hidden><div id="stack"></div><div id="digit" hidden></div><div id="items" hidden></div></div>
 
 <div id="g9" class="screen game" hidden><div id="name"></div></div>
 
@@ -254,7 +292,7 @@
 
   // ---------- 공통 ----------
   var audioCtx = null, lastHit = 0, started = 0, ended = false, current = null, timers = [];
-  var screens = {}; ['menu','g1','g2','g3','g4','g6','g7','g9','g10'].forEach(function (id) { screens[id] = document.getElementById(id); });
+  var screens = {}; ['menu','g0','g1','g2','g3','g4','g6','g7','g9','g10'].forEach(function (id) { screens[id] = document.getElementById(id); });
   var veil = document.getElementById('veil'), exitPad = document.getElementById('exit');
 
   function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
@@ -291,12 +329,12 @@
   function blip() { tone(660, 0, 0.15); }
   function jingle() { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.35); }); }
 
-  function speak(text, rate) {
+  function speak(text, rate, lang) {
     try {
       if (!('speechSynthesis' in window)) return;
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = LANG; u.rate = rate || 0.9; u.pitch = 1.15;
+      u.lang = lang || LANG; u.rate = rate || 0.9; u.pitch = 1.15;
       speechSynthesis.speak(u);
     } catch (e) {}
   }
@@ -352,6 +390,19 @@
 
   var games = {};
 
+  // ---------- 0 쎄쎄쎄 ----------
+  // 노래 소절 자리표시. 녹음 파일을 받으면 오디오 클립으로 교체. 노래가 한국어라 이 게임만 한국어 음성.
+  var PHRASES = ['쎄쎄쎄', '짝', '짝짝', '쎄쎄쎄'], phraseIdx = 0;
+  games.g0 = function () { phraseIdx = 0; };
+  screens.g0.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var hands = document.getElementById('hands');
+    hands.classList.remove('clap'); void hands.offsetWidth; hands.classList.add('clap');
+    later(function () { hands.classList.remove('clap'); }, 260);
+    popSound(); burst(screens.g0, e.clientX, e.clientY);
+    later(function () { speak(PHRASES[phraseIdx % PHRASES.length], 1, 'ko-KR'); phraseIdx++; }, 120);
+  });
+
   // ---------- 1 풍선 ----------
   games.g1 = function () {
     var g = screens.g1;
@@ -388,14 +439,16 @@
 
   // ---------- 3·4 두 개 중 고르기 ----------
   function setupChoose(id, withSound) {
-    var g = screens[id], tgt = g.querySelector('.target'), opts = g.querySelectorAll('.opt'), answer = null, busy = false;
+    var g = screens[id], tgt = g.querySelector('.target'), optsBox = g.querySelector('.options'), opts = g.querySelectorAll('.opt'), answer = null, busy = false, hintT = null;
+    function showHint() { optsBox.classList.add('hint'); }
     function round() {
-      busy = false;
+      busy = false; optsBox.classList.remove('hint');
       answer = pick(ITEMS, answer); var other = pick(ITEMS, answer); var left = rnd(2);
       opts[left].textContent = answer.pic; opts[1 - left].textContent = other.pic;
       opts[left].dataset.ok = '1'; opts[1 - left].dataset.ok = '';
-      if (withSound) { tgt.innerHTML = '<span class="speaker pulse">🔊</span>'; later(function () { speak(answer.word); }, 400); }
-      else { tgt.textContent = answer.pic; tgt.classList.add('pulse'); }
+      if (withSound) { tgt.innerHTML = '<span class="speaker">🔊</span>'; later(function () { speak(answer.word); }, 400); }
+      else { tgt.textContent = answer.pic; }
+      hintT = later(showHint, 1500);           // 1.5초 안 치면 두 선택지가 번갈아 "여기 눌러" 신호
     }
     games[id] = round;
     g.addEventListener('pointerdown', function (e) {
@@ -404,12 +457,14 @@
       if (!el) return;
       if (el === tgt || tgt.contains(el)) { if (withSound) speak(answer.word); return; }
       var opt = el.closest('.opt'); if (!opt) return;
+      clearTimeout(hintT); optsBox.classList.remove('hint');
       if (opt.dataset.ok) {
         busy = true; opt.classList.add('pop'); burst(g, e.clientX, e.clientY); reward(g);
         later(function () { opt.classList.remove('pop'); round(); }, 2200);
       } else {
-        tgt.classList.remove('pulse'); void tgt.offsetWidth; tgt.classList.add('pulse');   // 오답: 정답 힌트만 살짝
+        tgt.classList.remove('pop'); void tgt.offsetWidth; tgt.classList.add('pop');   // 오답: 위 그림만 살짝
         if (withSound) later(function () { speak(answer.word); }, 300);
+        hintT = later(showHint, 1200);
       }
     });
   }
@@ -431,14 +486,30 @@
   });
 
   // ---------- 7 치는 만큼 쌓기 ----------
-  games.g7 = function () { document.getElementById('stack').innerHTML = ''; };
+  // 한 판(10)이 끝날 때마다 모습이 바뀜: 블록 쌓기 → 큰 숫자 → 딸기 → 블록 → 큰 숫자 → 병아리 → …
+  var COUNT_PICS = ['🍓', '🐥', '⭐', '🍪', '🐸', '🎈'];
+  var g7mode = 0, g7k = 0, g7pic = 0, g7busy = false;
+  var stackEl = document.getElementById('stack'), digitEl = document.getElementById('digit'), itemsEl = document.getElementById('items');
+  games.g7 = function () { g7mode = 0; g7pic = 0; g7round(); };
+  function g7round() {
+    g7k = 0; g7busy = false;
+    stackEl.innerHTML = ''; digitEl.textContent = ''; itemsEl.innerHTML = '';
+    var m = g7mode % 3;
+    stackEl.hidden = (m !== 0); digitEl.hidden = (m !== 1); itemsEl.hidden = (m !== 2);
+  }
   screens.g7.addEventListener('pointerdown', function (e) {
-    e.preventDefault(); if (!gate()) return;
-    var st = document.getElementById('stack'), k = st.children.length;
-    if (k >= NUMS.length) return;
-    var b = document.createElement('div'); b.className = 'block'; b.style.background = cssVar(k); st.appendChild(b);
+    e.preventDefault(); if (!gate() || g7busy) return;
+    var k = g7k, m = g7mode % 3;
+    if (m === 0) { var b = document.createElement('div'); b.className = 'block'; b.style.background = cssVar(k); stackEl.appendChild(b); }
+    else if (m === 1) { digitEl.textContent = String(k + 1); digitEl.style.color = cssVar(k); digitEl.classList.remove('pop'); void digitEl.offsetWidth; digitEl.classList.add('pop'); }
+    else { var s = document.createElement('span'); s.textContent = COUNT_PICS[g7pic % COUNT_PICS.length]; itemsEl.appendChild(s); }
     popSound(); later(function () { speak(NUMS[k], 1); }, 80);
-    if (k + 1 === NUMS.length) { later(function () { reward(screens.g7); }, 900); later(games.g7, 3200); }
+    g7k++;
+    if (g7k === NUMS.length) {
+      g7busy = true;
+      later(function () { reward(screens.g7); }, 900);
+      later(function () { if (m === 2) g7pic++; g7mode++; g7round(); }, 3400);
+    }
   });
 
   // ---------- 9 내 이름 ----------
