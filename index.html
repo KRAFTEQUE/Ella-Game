@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ella">
+<title>엘라 게임</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<style>
+  /* Layout: parent menu of 7 big tiles; each game takes the whole screen with no visible controls. Single bright look. */
+  :root {
+    --bg: #fff3c4; --bg2: #ffe08a; --ink: #3a2a14; --muted: #8c7a5a;
+    --tile: #ffffff; --tile-edge: #f0c86a;
+    --b1: #ff5c5c; --b2: #ffc83d; --b3: #4cd98a; --b4: #5ab0ff; --b5: #c77dff; --b6: #ff8ac2;
+    --dark: #1a1230;
+    --font: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body {
+    background: var(--bg); color: var(--ink); font-family: var(--font);
+    touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+    overscroll-behavior: none; position: relative;
+  }
+  .screen { position: absolute; inset: 0; }
+  [hidden] { display: none !important; }
+
+  /* ---------- parent menu ---------- */
+  #menu {
+    overflow-y: auto; touch-action: pan-y; box-sizing: border-box;
+    padding-block: 0 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,200,61,.35), transparent 28%),
+      radial-gradient(circle at 88% 4%, rgba(90,176,255,.30), transparent 26%),
+      radial-gradient(circle at 70% 90%, rgba(255,138,194,.25), transparent 30%),
+      var(--bg);
+  }
+  .menu-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .hero { padding-block: 28px 4px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .hero h1 { font-family: "Fredoka", var(--font); font-weight: 700; font-size: clamp(36px, 7vw, 56px); margin: 0; letter-spacing: -.01em; line-height: 1; color: var(--ink); }
+  .hero h1 span { display: inline-block; }
+  .hero h1 span:nth-child(1) { color: var(--b1); } .hero h1 span:nth-child(2) { color: var(--b4); }
+  .hero h1 span:nth-child(3) { color: var(--b3); } .hero h1 span:nth-child(4) { color: var(--b5); }
+  .hero .sub { font-size: 14px; color: var(--muted); margin: 0; }
+  .howto {
+    display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
+    background: rgba(255,255,255,.6); border: 1.5px solid rgba(0,0,0,.06); border-radius: 16px; padding: 12px 16px;
+    font-size: 13px; line-height: 1.5; color: var(--ink);
+  }
+  .howto .k { display: inline-flex; align-items: center; gap: 6px; }
+  .howto .k b { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; background: var(--bg2); font-size: 14px; }
+  .group { display: flex; flex-direction: column; gap: 10px; }
+  .group h2 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+  .group h2::after { content: ""; flex: 1; height: 1.5px; background: rgba(0,0,0,.08); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .tile {
+    position: relative; overflow: hidden;
+    background: var(--tile); border: 0; border-radius: 22px;
+    padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left;
+    cursor: pointer; font: inherit; color: inherit; min-height: 128px;
+    box-shadow: 0 2px 0 rgba(0,0,0,.06), 0 10px 24px -14px rgba(60,40,0,.25);
+    transition: transform .12s ease;
+  }
+  .tile::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 6px; background: var(--c); }
+  .tile:active { transform: scale(.97); }
+  .tile:focus-visible { outline: 3px solid var(--b4); outline-offset: 2px; }
+  .tile .ico { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 30px; line-height: 1; background: color-mix(in srgb, var(--c) 18%, white); }
+  .tile .nm { font-family: "Fredoka", var(--font); font-weight: 600; font-size: 20px; line-height: 1.1; }
+  .tile .st { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+  .tile .en { font-size: 11px; color: var(--c); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+  /* ---------- shared game bits ---------- */
+  .game { display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+  .big { font-size: min(34vw, 42vh); line-height: 1; }
+  .burst { position: absolute; width: 0; height: 0; pointer-events: none; z-index: 5; }
+  .dot { position: absolute; width: 40px; height: 40px; margin: -20px; border-radius: 50%;
+         animation: fly .8s cubic-bezier(.2,.8,.3,1) forwards; }
+  @keyframes fly { 0%{transform:translate(0,0) scale(1);opacity:1} 100%{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0} }
+  .ring { position: absolute; width: 60px; height: 60px; margin: -30px; border-radius: 50%;
+          border: 10px solid rgba(255,255,255,.9); animation: ring .6s ease-out forwards; }
+  @keyframes ring { to { transform: scale(5); opacity: 0; } }
+  .confetti { position: absolute; width: 16px; height: 26px; top: -30px; animation: drop 1.6s linear forwards; pointer-events: none; z-index: 6; }
+  @keyframes drop { to { transform: translateY(120vh) rotate(720deg); } }
+  .pulse { animation: pulse 1.2s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.12); } }
+  .pop { animation: pop .5s ease-out; }
+  @keyframes pop { 30% { transform: scale(1.3); } }
+  #veil { position: absolute; inset: 0; background: var(--dark); opacity: 0; pointer-events: none; transition: opacity 6s linear; z-index: 20; }
+  #veil.on { opacity: 1; pointer-events: auto; }
+  #exit {
+    position: absolute; z-index: 30;
+    top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+    width: 54px; height: 54px; border-radius: 50%;
+    background: rgba(255,255,255,.75); border: 2px solid rgba(0,0,0,.15);
+    display: flex; align-items: center; justify-content: center; font-size: 26px; line-height: 1;
+    touch-action: none;
+  }
+  #exit::after {
+    content: ""; position: absolute; inset: -6px; border-radius: 50%;
+    border: 5px solid var(--b4); border-right-color: transparent; border-bottom-color: transparent; border-left-color: transparent;
+    opacity: 0; transform: rotate(0deg);
+  }
+  #exit.holding::after { opacity: 1; animation: spin 2s linear forwards; }
+  @keyframes spin { to { transform: rotate(720deg); } }
+
+  /* 1 풍선 */
+  #g1 { background: linear-gradient(#bfe6ff, #e9f7ff); }
+  .balloon { position: absolute; bottom: -45vmin; width: 34vmin; height: 42vmin; border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+             animation: rise linear forwards; box-shadow: inset -12px -18px 0 rgba(0,0,0,.08); }
+  .balloon::after { content: ""; position: absolute; left: 50%; bottom: -28px; width: 4px; height: 30px; background: rgba(0,0,0,.25); transform: translateX(-50%); }
+  @keyframes rise { to { bottom: 110vh; } }
+
+  /* 2 큰 피아노 */
+  #g2 { display: flex; }
+  .pad { flex: 1; display: flex; align-items: center; justify-content: center; font-size: min(18vw, 22vh); transition: filter .1s; }
+  .pad.lit { filter: brightness(1.25); }
+  .pad.lit .pk { animation: pop .35s ease-out; }
+  .pk { display: inline-block; line-height: 1; }
+
+  /* 3·4 두 개 중 고르기 */
+  .choose { flex-direction: column; }
+  .target { flex: 0 0 38%; display: flex; align-items: center; justify-content: center; width: 100%; font-size: min(26vw, 30vh); background: rgba(255,255,255,.55); }
+  .options { flex: 1; display: flex; width: 100%; }
+  .opt { flex: 1; display: flex; align-items: center; justify-content: center; font-size: min(26vw, 30vh); }
+  .opt:first-child { background: #ffe9e9; } .opt:last-child { background: #e6f1ff; }
+  .speaker { font-size: min(26vw, 30vh); }
+
+  /* 6 하나씩 담기 */
+  #g6 { background: #fff9ea; gap: 4vw; flex-wrap: wrap; padding: 4vw; box-sizing: border-box; }
+  .plate { width: 26vmin; height: 26vmin; border-radius: 50%; background: #fff; border: 8px solid #d9c9a3; display: flex; align-items: center; justify-content: center; font-size: 15vmin; }
+  .plate.full { border-color: var(--b3); }
+
+  /* 7 쌓기 */
+  #g7 { background: linear-gradient(#e8f6ff, #fdf6dc); align-items: flex-end; }
+  #stack { display: flex; flex-direction: column-reverse; align-items: center; padding-bottom: 6vh; }
+  .block { width: 40vmin; height: 8vh; border-radius: 10px; border: 3px solid rgba(0,0,0,.15); box-sizing: border-box; animation: pop .4s ease-out; }
+
+  /* 9 내 이름 */
+  #g9 { background: #fff0f6; }
+  #name { display: flex; gap: .05em; font-size: min(30vw, 40vh); font-weight: 900; }
+  #name span { display: inline-block; }
+  #name.hop span { animation: hop .6s ease-out; }
+  @keyframes hop { 40% { transform: translateY(-.25em) scale(1.15); } }
+
+  /* 10 그림 → 소리 → 글자 */
+  #g10 { background: #effbf2; flex-direction: column; gap: 2vh; }
+  #word { font-size: min(18vw, 20vh); font-weight: 900; height: 1.2em; opacity: 0; transition: opacity .3s; }
+  #word.show { opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) { .pulse, .pop, .hop span { animation: none; } }
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&display=swap">
+</head>
+<body>
+<div id="menu" class="screen">
+  <div class="menu-inner">
+    <div class="hero">
+      <div>
+        <h1><span>E</span><span>l</span><span>l</span><span>a</span>'s Games</h1>
+        <p class="sub">엘라를 위한 놀이 8가지 · 한 번에 하나씩</p>
+      </div>
+    </div>
+
+    <div class="howto">
+      <span class="k"><b>1</b>게임을 고르고 아이에게 넘겨주세요</span>
+      <span class="k"><b>2</b>게임 안에는 메뉴·글자가 없습니다</span>
+      <span class="k"><b>🏠</b>오른쪽 위 버튼을 2초 누르면 돌아옵니다</span>
+      <span class="k"><b>3′</b>첫 터치 후 3분이면 저절로 끝납니다</span>
+    </div>
+
+    <div class="group">
+      <h2>인과관계</h2>
+      <div class="tiles">
+        <button class="tile" data-g="g1" style="--c: var(--b4)"><span class="ico">🎈</span><span class="nm">풍선 터뜨리기</span><span class="st">올라오는 풍선을 치면 터져요. 움직이는 것을 겨냥하는 연습.</span><span class="en">Pop</span></button>
+        <button class="tile" data-g="g2" style="--c: var(--b2)"><span class="ico">🎹</span><span class="nm">큰 피아노</span><span class="st">네 칸을 치면 칸마다 다른 소리가 나요. 어디를 치느냐가 달라지는 연습.</span><span class="en">Big piano</span></button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>매칭 · 언어 이해</h2>
+      <div class="tiles">
+        <button class="tile" data-g="g3" style="--c: var(--b1)"><span class="ico">🍎</span><span class="nm">같은 것 찾기</span><span class="st">위 그림과 같은 것을 아래 두 개 중에서 골라요.</span><span class="en">Match</span></button>
+        <button class="tile" data-g="g4" style="--c: var(--b5)"><span class="ico">🔊</span><span class="nm">소리 듣고 찾기</span><span class="st">단어를 듣고 그림을 골라요. 스피커를 치면 다시 들려요.</span><span class="en">Listen</span></button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>수 전단계</h2>
+      <div class="tiles">
+        <button class="tile" data-g="g6" style="--c: var(--b2)"><span class="ico">🍪</span><span class="nm">하나씩 담기</span><span class="st">접시마다 과자 하나. 다 채우면 끝. 1:1 대응.</span><span class="en">One each</span></button>
+        <button class="tile" data-g="g7" style="--c: var(--b3)"><span class="ico">🧱</span><span class="nm">치는 만큼 쌓기</span><span class="st">칠 때마다 블록이 쌓이고 one, two, three… 열까지.</span><span class="en">Count</span></button>
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>문자 전단계</h2>
+      <div class="tiles">
+        <button class="tile" data-g="g9" style="--c: var(--b6)"><span class="ico">✨</span><span class="nm">내 이름</span><span class="st">이름 글자를 치면 튀어오르며 이름을 불러줘요.</span><span class="en">My name</span></button>
+        <button class="tile" data-g="g10" style="--c: var(--b3)"><span class="ico">🖼️</span><span class="nm">그림 · 소리 · 글자</span><span class="st">그림을 치면 단어 소리와 글자가 함께 나와요.</span><span class="en">Word</span></button>
+      </div>
+    </div>
+
+    <p class="foot">아이에게 들리는 말과 글자는 영어입니다. 그림은 임시로 이모지, 소리는 기기 음성입니다. 사진과 녹음을 주시면 교체합니다.</p>
+  </div>
+</div>
+
+<div id="g1" class="screen game" hidden></div>
+
+<div id="g2" class="screen game" hidden>
+  <div class="pad" data-n="0" style="background:#ff8a8a"><span class="pk">🐸</span></div>
+  <div class="pad" data-n="1" style="background:#ffd36a"><span class="pk">🐥</span></div>
+  <div class="pad" data-n="2" style="background:#8ae0a8"><span class="pk">🐷</span></div>
+  <div class="pad" data-n="3" style="background:#8ac4ff"><span class="pk">🐱</span></div>
+</div>
+
+<div id="g3" class="screen game choose" hidden>
+  <div class="target" id="g3t"></div>
+  <div class="options"><div class="opt" data-i="0"></div><div class="opt" data-i="1"></div></div>
+</div>
+
+<div id="g4" class="screen game choose" hidden>
+  <div class="target" id="g4t"><span class="speaker">🔊</span></div>
+  <div class="options"><div class="opt" data-i="0"></div><div class="opt" data-i="1"></div></div>
+</div>
+
+<div id="g6" class="screen game" hidden></div>
+
+<div id="g7" class="screen game" hidden><div id="stack"></div></div>
+
+<div id="g9" class="screen game" hidden><div id="name"></div></div>
+
+<div id="g10" class="screen game" hidden><div class="big" id="g10pic"></div><div id="word"></div></div>
+
+<div id="veil"></div>
+<div id="exit" hidden>🏠</div>
+
+<script>
+(function () {
+  // ---------- 설정 (사진·녹음 교체 시 여기만 바꿉니다) ----------
+  var LANG = 'en-US';                 // 아이에게 들리는 언어. 한국어로 바꾸려면 'ko-KR'
+  var CHILD_NAME = 'Ella';
+  var PRAISE = 'Great job!';
+  var ITEMS = [
+    { word: 'apple', pic: '🍎' }, { word: 'banana', pic: '🍌' }, { word: 'milk', pic: '🥛' },
+    { word: 'ball', pic: '⚽' }, { word: 'car', pic: '🚗' }, { word: 'dog', pic: '🐶' }
+  ];
+  var NUMS = ['one','two','three','four','five','six','seven','eight','nine','ten'];
+  var SESSION_MS = 3 * 60 * 1000, COOLDOWN_MS = 180;
+  var COLORS = ['--b1','--b2','--b3','--b4','--b5','--b6'];
+
+  // ---------- 공통 ----------
+  var audioCtx = null, lastHit = 0, started = 0, ended = false, current = null, timers = [];
+  var screens = {}; ['menu','g1','g2','g3','g4','g6','g7','g9','g10'].forEach(function (id) { screens[id] = document.getElementById(id); });
+  var veil = document.getElementById('veil'), exitPad = document.getElementById('exit');
+
+  function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
+  function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+  function rnd(n) { return Math.floor(Math.random() * n); }
+  function pick(arr, not) { var x; do { x = arr[rnd(arr.length)]; } while (arr.length > 1 && x === not); return x; }
+  function cssVar(i) { return 'var(' + COLORS[i % COLORS.length] + ')'; }
+
+  function ctx() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    } catch (e) { return null; }
+  }
+  function popSound() {
+    var c = ctx(); if (!c) return;
+    var len = Math.floor(c.sampleRate * 0.1), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    var s = c.createBufferSource(); s.buffer = buf;
+    var f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.7;
+    var g = c.createGain(); g.gain.value = 0.9;
+    s.connect(f); f.connect(g); g.connect(c.destination); s.start();
+  }
+  function tone(freq, t0, dur) {
+    var c = ctx(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, c.currentTime + t0);
+    g.gain.exponentialRampToValueAtTime(0.5, c.currentTime + t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
+    o.connect(g); g.connect(c.destination); o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+  }
+  function blip() { tone(660, 0, 0.15); }
+  function jingle() { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.35); }); }
+
+  function speak(text, rate) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = LANG; u.rate = rate || 0.9; u.pitch = 1.15;
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function burst(parent, x, y) {
+    var b = document.createElement('div'); b.className = 'burst'; b.style.left = x + 'px'; b.style.top = y + 'px';
+    var r = document.createElement('div'); r.className = 'ring'; b.appendChild(r);
+    for (var i = 0; i < 14; i++) {
+      var d = document.createElement('div'); d.className = 'dot';
+      var a = Math.random() * Math.PI * 2, rad = 120 + Math.random() * 180;
+      d.style.background = cssVar(i);
+      d.style.setProperty('--dx', Math.cos(a) * rad + 'px'); d.style.setProperty('--dy', Math.sin(a) * rad + 'px');
+      b.appendChild(d);
+    }
+    parent.appendChild(b); later(function () { b.remove(); }, 900);
+  }
+  function reward(parent) {
+    jingle(); later(function () { speak(PRAISE, 1); }, 350);
+    for (var i = 0; i < 40; i++) {
+      var c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%'; c.style.background = cssVar(i);
+      c.style.animationDelay = Math.random() * 0.5 + 's';
+      parent.appendChild(c); (function (el) { later(function () { el.remove(); }, 2300); })(c);
+    }
+  }
+  function gate() {               // 손바닥 다중 터치를 한 번으로 묶음
+    if (ended) return false;
+    var now = Date.now(); if (now - lastHit < COOLDOWN_MS) return false; lastHit = now;
+    if (!started) { started = now; later(finish, SESSION_MS); }
+    return true;
+  }
+
+  function show(id) {
+    Object.keys(screens).forEach(function (k) { screens[k].hidden = (k !== id); });
+    exitPad.hidden = (id === 'menu');
+  }
+  function start(id) {
+    clearTimers(); started = 0; ended = false; lastHit = 0; current = id;
+    veil.classList.remove('on'); show(id);
+    if (games[id]) games[id]();
+  }
+  function finish() {
+    ended = true; try { speechSynthesis.cancel(); } catch (e) {}
+    veil.classList.add('on');
+    later(function () { backToMenu(); }, 9000);
+  }
+  function backToMenu() {
+    clearTimers(); ended = false; started = 0; current = null;
+    try { speechSynthesis.cancel(); } catch (e) {}
+    Object.keys(screens).forEach(function (k) { if (k !== 'menu') screens[k].querySelectorAll('.burst,.confetti,.balloon').forEach(function (n) { n.remove(); }); });
+    veil.classList.remove('on'); show('menu');
+  }
+
+  var games = {};
+
+  // ---------- 1 풍선 ----------
+  games.g1 = function () {
+    var g = screens.g1;
+    function spawn() {
+      if (current !== 'g1') return;
+      var b = document.createElement('div'); b.className = 'balloon';
+      b.style.left = (5 + Math.random() * 60) + 'vw'; b.style.background = cssVar(rnd(6));
+      b.style.animationDuration = (9 + Math.random() * 5) + 's';
+      g.appendChild(b); later(function () { b.remove(); }, 15000);
+      later(spawn, 1600 + Math.random() * 1200);
+    }
+    spawn(); later(spawn, 700);
+  };
+  screens.g1.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY);
+    var hit = el && el.classList.contains('balloon');
+    if (hit) { el.remove(); popSound(); burst(screens.g1, e.clientX, e.clientY); } else { blip(); }
+  });
+
+  // ---------- 2 큰 피아노 ----------
+  var NOTES = [392, 494, 587, 784];
+  games.g2 = function () {};
+  screens.g2.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY); var pad = el && el.closest('.pad');
+    if (!pad) return;
+    var n = +pad.dataset.n;
+    tone(NOTES[n], 0, 0.6); tone(NOTES[n] * 2, 0, 0.3);
+    pad.classList.remove('lit'); void pad.offsetWidth; pad.classList.add('lit');
+    burst(screens.g2, e.clientX, e.clientY);
+    later(function () { pad.classList.remove('lit'); }, 350);
+  });
+
+  // ---------- 3·4 두 개 중 고르기 ----------
+  function setupChoose(id, withSound) {
+    var g = screens[id], tgt = g.querySelector('.target'), opts = g.querySelectorAll('.opt'), answer = null, busy = false;
+    function round() {
+      busy = false;
+      answer = pick(ITEMS, answer); var other = pick(ITEMS, answer); var left = rnd(2);
+      opts[left].textContent = answer.pic; opts[1 - left].textContent = other.pic;
+      opts[left].dataset.ok = '1'; opts[1 - left].dataset.ok = '';
+      if (withSound) { tgt.innerHTML = '<span class="speaker pulse">🔊</span>'; later(function () { speak(answer.word); }, 400); }
+      else { tgt.textContent = answer.pic; tgt.classList.add('pulse'); }
+    }
+    games[id] = round;
+    g.addEventListener('pointerdown', function (e) {
+      e.preventDefault(); if (!gate() || busy) return;
+      var el = document.elementFromPoint(e.clientX, e.clientY);
+      if (!el) return;
+      if (el === tgt || tgt.contains(el)) { if (withSound) speak(answer.word); return; }
+      var opt = el.closest('.opt'); if (!opt) return;
+      if (opt.dataset.ok) {
+        busy = true; opt.classList.add('pop'); burst(g, e.clientX, e.clientY); reward(g);
+        later(function () { opt.classList.remove('pop'); round(); }, 2200);
+      } else {
+        tgt.classList.remove('pulse'); void tgt.offsetWidth; tgt.classList.add('pulse');   // 오답: 정답 힌트만 살짝
+        if (withSound) later(function () { speak(answer.word); }, 300);
+      }
+    });
+  }
+  setupChoose('g3', false); setupChoose('g4', true);
+
+  // ---------- 6 하나씩 담기 ----------
+  games.g6 = function () {
+    var g = screens.g6; g.innerHTML = '';
+    var n = 2 + rnd(3);
+    for (var i = 0; i < n; i++) { var p = document.createElement('div'); p.className = 'plate'; g.appendChild(p); }
+  };
+  screens.g6.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var el = document.elementFromPoint(e.clientX, e.clientY); var p = el && el.closest('.plate');
+    if (!p || p.classList.contains('full')) { blip(); return; }
+    p.textContent = '🍪'; p.classList.add('full', 'pop'); popSound();
+    var plates = screens.g6.querySelectorAll('.plate'), full = screens.g6.querySelectorAll('.plate.full');
+    if (full.length === plates.length) { reward(screens.g6); later(games.g6, 2400); }
+  });
+
+  // ---------- 7 치는 만큼 쌓기 ----------
+  games.g7 = function () { document.getElementById('stack').innerHTML = ''; };
+  screens.g7.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var st = document.getElementById('stack'), k = st.children.length;
+    if (k >= NUMS.length) return;
+    var b = document.createElement('div'); b.className = 'block'; b.style.background = cssVar(k); st.appendChild(b);
+    popSound(); later(function () { speak(NUMS[k], 1); }, 80);
+    if (k + 1 === NUMS.length) { later(function () { reward(screens.g7); }, 900); later(games.g7, 3200); }
+  });
+
+  // ---------- 9 내 이름 ----------
+  games.g9 = function () {
+    var nm = document.getElementById('name'); nm.innerHTML = '';
+    CHILD_NAME.split('').forEach(function (ch, i) { var s = document.createElement('span'); s.textContent = ch; s.style.color = cssVar(i); nm.appendChild(s); });
+  };
+  screens.g9.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var nm = document.getElementById('name');
+    nm.classList.remove('hop'); void nm.offsetWidth; nm.classList.add('hop');
+    Array.prototype.forEach.call(nm.children, function (s, i) { s.style.color = cssVar(i + rnd(6)); });
+    burst(screens.g9, e.clientX, e.clientY); speak(CHILD_NAME + '!', 0.95);
+  });
+
+  // ---------- 10 그림 → 소리 → 글자 ----------
+  var g10item = null;
+  games.g10 = function () {
+    g10item = pick(ITEMS, g10item);
+    document.getElementById('g10pic').textContent = g10item.pic;
+    var w = document.getElementById('word'); w.textContent = g10item.word; w.classList.remove('show');
+  };
+  screens.g10.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); if (!gate()) return;
+    var pic = document.getElementById('g10pic'), w = document.getElementById('word');
+    pic.classList.remove('pop'); void pic.offsetWidth; pic.classList.add('pop');
+    popSound(); later(function () { speak(g10item.word); }, 100);
+    if (!w.classList.contains('show')) { w.classList.add('show'); }
+    else { burst(screens.g10, e.clientX, e.clientY); later(games.g10, 1200); }
+  });
+
+  // ---------- 메뉴·종료 ----------
+  screens.menu.addEventListener('click', function (e) {
+    var t = e.target.closest('.tile'); if (!t) return;
+    ctx(); try { speechSynthesis.cancel(); } catch (x) {}   // 첫 사용자 동작으로 소리 잠금 해제
+    start(t.dataset.g);
+  });
+  var holdT = null;
+  exitPad.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); e.stopPropagation();
+    exitPad.classList.add('holding');
+    holdT = setTimeout(function () { exitPad.classList.remove('holding'); backToMenu(); }, 2000);
+  });
+  ['pointerup','pointercancel','pointerleave'].forEach(function (ev) {
+    exitPad.addEventListener(ev, function () { clearTimeout(holdT); exitPad.classList.remove('holding'); });
+  });
+  document.addEventListener('touchmove', function (e) { if (current) e.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+  document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+})();
+</script>
+</body>
+</html>
