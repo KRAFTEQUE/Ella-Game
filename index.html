@@ -114,12 +114,12 @@
   .balloon::after { content: ""; position: absolute; left: 50%; bottom: -28px; width: 4px; height: 30px; background: rgba(0,0,0,.25); transform: translateX(-50%); }
   @keyframes rise { to { bottom: 110vh; } }
 
-  /* 2 큰 피아노 */
-  #g2 { display: flex; }
-  .pad { flex: 1; display: flex; align-items: center; justify-content: center; font-size: min(18vw, 22vh); transition: filter .1s; }
-  .pad.lit { filter: brightness(1.25); }
-  .pad.lit .pk { animation: pop .35s ease-out; }
-  .pk { display: inline-block; line-height: 1; }
+  /* 2 큰 피아노 — 장난감 피아노 건반 네 개 */
+  #g2 { display: flex; background: #2b2340; gap: 1.2vw; padding: 3vh 1.2vw 0; box-sizing: border-box; align-items: stretch; }
+  .pad { flex: 1; position: relative; background: #fffdf7; border-radius: 0 0 4vmin 4vmin;
+         box-shadow: inset 0 -2.2vh 0 rgba(0,0,0,.08), 0 1vh 0 rgba(0,0,0,.35); transition: transform .08s, background .08s; }
+  .pad::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: 7vh; height: 3.5vh; border-radius: 2vh; background: var(--k); opacity: .9; }
+  .pad.lit { background: color-mix(in srgb, var(--k) 45%, white); transform: translateY(1vh); box-shadow: inset 0 -1vh 0 rgba(0,0,0,.1), 0 0 0 rgba(0,0,0,0); }
 
   /* 0 쎄쎄쎄 */
   #g0 { background: #fff3c4; }
@@ -134,7 +134,10 @@
 
   /* 3·4 두 개 중 고르기 — 위는 작게, 아래 선택지가 화면을 지배 */
   .choose { flex-direction: column; }
-  .target { flex: 0 0 20%; display: flex; align-items: center; justify-content: center; width: 100%; font-size: min(12vw, 14vh); background: rgba(255,255,255,.55); }
+  .target { flex: 0 0 22%; display: flex; align-items: center; justify-content: center; gap: 4vw; width: 100%; background: rgba(255,255,255,.55); }
+  .tpic { font-size: min(13vw, 16vh); line-height: 1; }
+  .tspk { font-size: min(5vw, 6vh); line-height: 1; opacity: .55; }
+  .target.say .tspk { animation: pulse .6s ease-in-out 2; opacity: 1; }
   .options { flex: 1; display: flex; width: 100%; gap: 3vw; padding: 2vh 3vw 3vh; box-sizing: border-box; }
   .opt { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; font-size: min(30vw, 40vh);
          border-radius: 5vmin; border: 1.2vmin solid rgba(0,0,0,.08); }
@@ -146,7 +149,6 @@
          transform: translateX(-50%); animation: tapbounce 1.6s ease-in-out infinite; }
   .options.hint .opt:last-child::after { animation-delay: .8s; }
   @keyframes tapbounce { 0%,100% { transform: translateX(-50%) translateY(0); opacity: .35; } 50% { transform: translateX(-50%) translateY(-2.5vh); opacity: 1; } }
-  .speaker { font-size: min(12vw, 14vh); }
 
   /* 6 하나씩 담기 */
   #g6 { background: #fff9ea; gap: 4vw; flex-wrap: wrap; padding: 4vw; box-sizing: border-box; }
@@ -183,7 +185,7 @@
     <div class="hero">
       <div>
         <h1><span>E</span><span>l</span><span>l</span><span>a</span>'s Games</h1>
-        <p class="sub">엘라를 위한 놀이 9가지 · 한 번에 하나씩</p>
+        <p class="sub">엘라를 위한 놀이 8가지 · 한 번에 하나씩</p>
       </div>
     </div>
 
@@ -199,15 +201,14 @@
       <div class="tiles">
         <button class="tile" data-g="g0" style="--c: var(--b1)"><span class="ico">👏</span><span class="nm">쎄쎄쎄</span><span class="st">어디를 쳐도 손뼉이 짝 하고 노래가 한 소절씩 이어져요.</span><span class="en">Clap</span></button>
         <button class="tile" data-g="g1" style="--c: var(--b4)"><span class="ico">🎈</span><span class="nm">풍선 터뜨리기</span><span class="st">올라오는 풍선을 치면 터져요. 움직이는 것을 겨냥하는 연습.</span><span class="en">Pop</span></button>
-        <button class="tile" data-g="g2" style="--c: var(--b2)"><span class="ico">🎹</span><span class="nm">큰 피아노</span><span class="st">네 칸을 치면 칸마다 다른 소리가 나요. 어디를 치느냐가 달라지는 연습.</span><span class="en">Big piano</span></button>
+        <button class="tile" data-g="g2" style="--c: var(--b2)"><span class="ico">🎹</span><span class="nm">큰 피아노</span><span class="st">건반 네 개를 치면 건반마다 다른 음이 나요. 어디를 치느냐가 달라지는 연습.</span><span class="en">Big piano</span></button>
       </div>
     </div>
 
     <div class="group">
       <h2>매칭 · 언어 이해</h2>
       <div class="tiles">
-        <button class="tile" data-g="g3" style="--c: var(--b1)"><span class="ico">🍎</span><span class="nm">같은 것 찾기</span><span class="st">위 그림과 같은 것을 아래 두 개 중에서 골라요.</span><span class="en">Match</span></button>
-        <button class="tile" data-g="g4" style="--c: var(--b5)"><span class="ico">🔊</span><span class="nm">소리 듣고 찾기</span><span class="st">단어를 듣고 그림을 골라요. 스피커를 치면 다시 들려요.</span><span class="en">Listen</span></button>
+        <button class="tile" data-g="g3" style="--c: var(--b1)"><span class="ico">🍎</span><span class="nm">같은 것 찾기</span><span class="st">위에 그림이 나오며 이름을 들려줘요. 아래 두 개 중 같은 것을 골라요. 위 그림을 치면 다시 들려요.</span><span class="en">Match</span></button>
       </div>
     </div>
 
@@ -249,19 +250,14 @@
 <div id="g1" class="screen game" hidden></div>
 
 <div id="g2" class="screen game" hidden>
-  <div class="pad" data-n="0" style="background:#ff8a8a"><span class="pk">🐸</span></div>
-  <div class="pad" data-n="1" style="background:#ffd36a"><span class="pk">🐥</span></div>
-  <div class="pad" data-n="2" style="background:#8ae0a8"><span class="pk">🐷</span></div>
-  <div class="pad" data-n="3" style="background:#8ac4ff"><span class="pk">🐱</span></div>
+  <div class="pad" data-n="0" style="--k:#ff5c5c"></div>
+  <div class="pad" data-n="1" style="--k:#ffc83d"></div>
+  <div class="pad" data-n="2" style="--k:#4cd98a"></div>
+  <div class="pad" data-n="3" style="--k:#5ab0ff"></div>
 </div>
 
 <div id="g3" class="screen game choose" hidden>
-  <div class="target" id="g3t"></div>
-  <div class="options"><div class="opt" data-i="0"></div><div class="opt" data-i="1"></div></div>
-</div>
-
-<div id="g4" class="screen game choose" hidden>
-  <div class="target" id="g4t"><span class="speaker">🔊</span></div>
+  <div class="target" id="g3t"><span class="tpic"></span><span class="tspk">🔊</span></div>
   <div class="options"><div class="opt" data-i="0"></div><div class="opt" data-i="1"></div></div>
 </div>
 
@@ -292,7 +288,7 @@
 
   // ---------- 공통 ----------
   var audioCtx = null, lastHit = 0, started = 0, ended = false, current = null, timers = [];
-  var screens = {}; ['menu','g0','g1','g2','g3','g4','g6','g7','g9','g10'].forEach(function (id) { screens[id] = document.getElementById(id); });
+  var screens = {}; ['menu','g0','g1','g2','g3','g6','g7','g9','g10'].forEach(function (id) { screens[id] = document.getElementById(id); });
   var veil = document.getElementById('veil'), exitPad = document.getElementById('exit');
 
   function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
@@ -301,39 +297,54 @@
   function pick(arr, not) { var x; do { x = arr[rnd(arr.length)]; } while (arr.length > 1 && x === not); return x; }
   function cssVar(i) { return 'var(' + COLORS[i % COLORS.length] + ')'; }
 
+  // iOS는 홈 화면 전환·전화·다른 앱 소리 뒤에 오디오를 'interrupted'/'suspended'로 멈춰 둠. 매번 running이 아니면 깨움.
+  var master = null;
   function ctx() {
     try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        master = audioCtx.createGain(); master.gain.value = 1; master.connect(audioCtx.destination);
+      }
+      if (audioCtx.state !== 'running') audioCtx.resume();
       return audioCtx;
     } catch (e) { return null; }
   }
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && audioCtx) ctx(); });
   function unlockAudio() {
     var c = ctx();
-    if (c) { try { var b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(0); } catch (e) {} }
+    if (c) { try { var b = c.createBuffer(1, 1, 22050), s = c.createBufferSource(); s.buffer = b; s.connect(master); s.start(0); } catch (e) {} }
     try {
-      if ('speechSynthesis' in window) { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(' '); u.volume = 0; u.lang = LANG; speechSynthesis.speak(u); }
+      if ('speechSynthesis' in window) { speechSynthesis.resume(); var u = new SpeechSynthesisUtterance(' '); u.volume = 0.01; u.lang = LANG; speechSynthesis.speak(u); }
     } catch (e) {}
   }
-  function popSound() {
+  function noise(dur, freq, q, vol, t0) {
     var c = ctx(); if (!c) return;
-    var len = Math.floor(c.sampleRate * 0.1), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    var len = Math.floor(c.sampleRate * dur), buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2);
     var s = c.createBufferSource(); s.buffer = buf;
-    var f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.7;
-    var g = c.createGain(); g.gain.value = 0.9;
-    s.connect(f); f.connect(g); g.connect(c.destination); s.start();
+    var f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = q;
+    var g = c.createGain(); g.gain.value = vol;
+    s.connect(f); f.connect(g); g.connect(master); s.start(c.currentTime + (t0 || 0));
   }
-  function tone(freq, t0, dur) {
+  function popSound() { noise(0.12, 1800, 0.8, 1.4, 0); }                 // 손뼉·톡 소리
+  function bang() {                                                        // 풍선 '팡': 낮은 펑 + 터지는 파열음
+    var c = ctx(); if (!c) return;
+    var o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+    o.type = 'sine'; o.frequency.setValueAtTime(420 + Math.random() * 120, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.18);
+    g.gain.setValueAtTime(1.2, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+    o.connect(g); g.connect(master); o.start(t); o.stop(t + 0.25);
+    noise(0.16, 2600, 0.5, 1.6, 0);
+  }
+  function tone(freq, t0, dur, vol) {
     var c = ctx(); if (!c) return;
     var o = c.createOscillator(), g = c.createGain();
     o.type = 'triangle'; o.frequency.value = freq;
     g.gain.setValueAtTime(0.0001, c.currentTime + t0);
-    g.gain.exponentialRampToValueAtTime(0.5, c.currentTime + t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(vol || 0.7, c.currentTime + t0 + 0.02);
     g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + t0 + dur);
-    o.connect(g); g.connect(c.destination); o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
+    o.connect(g); g.connect(master); o.start(c.currentTime + t0); o.stop(c.currentTime + t0 + dur + 0.05);
   }
-  function blip() { tone(660, 0, 0.15); }
+  function blip() { tone(660, 0, 0.15, 0.5); }
   function jingle() { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.35); }); }
 
   // 기기 기본 음성이 낮고 거친 남성 음성인 경우가 많아, 아이에게 맞는 음성을 이름으로 우선 고릅니다.
@@ -363,14 +374,23 @@
   }
   try { speechSynthesis.onvoiceschanged = function () { voiceCache = {}; }; } catch (e) {}
 
+  // cancel() 직후 같은 틱에 speak()하면 Safari·Chrome 모두 말을 삼키는 일이 잦음 → 잠깐 뒤에 말함.
+  var speakSeq = 0;
   function speak(text, rate, lang) {
     try {
       if (!('speechSynthesis' in window)) return;
-      speechSynthesis.cancel();
-      var u = new SpeechSynthesisUtterance(text);
-      u.lang = lang || LANG; u.rate = rate || 0.9; u.pitch = 1.1;
-      var v = pickVoice(u.lang); if (v) u.voice = v;
-      speechSynthesis.speak(u);
+      var my = ++speakSeq;
+      if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+      setTimeout(function () {
+        if (my !== speakSeq) return;                   // 더 새 말이 들어왔으면 이건 버림
+        try {
+          speechSynthesis.resume();                      // Chrome이 멈춰 둔 상태 해제
+          var u = new SpeechSynthesisUtterance(text);
+          u.lang = lang || LANG; u.rate = rate || 0.9; u.pitch = 1.1; u.volume = 1;
+          var v = pickVoice(u.lang); if (v) u.voice = v;
+          speechSynthesis.speak(u);
+        } catch (e) {}
+      }, 60);
     } catch (e) {}
   }
 
@@ -455,7 +475,7 @@
     e.preventDefault(); if (!gate()) return;
     var el = document.elementFromPoint(e.clientX, e.clientY);
     var hit = el && el.classList.contains('balloon');
-    if (hit) { el.remove(); popSound(); burst(screens.g1, e.clientX, e.clientY); } else { blip(); }
+    if (hit) { el.remove(); bang(); burst(screens.g1, e.clientX, e.clientY); } else { blip(); }
   });
 
   // ---------- 2 큰 피아노 ----------
@@ -472,38 +492,39 @@
     later(function () { pad.classList.remove('lit'); }, 350);
   });
 
-  // ---------- 3·4 두 개 중 고르기 ----------
-  function setupChoose(id, withSound) {
-    var g = screens[id], tgt = g.querySelector('.target'), optsBox = g.querySelector('.options'), opts = g.querySelectorAll('.opt'), answer = null, busy = false, hintT = null;
+  // ---------- 3 같은 것 찾기 (그림 + 이름 소리 → 아래 두 개 중 같은 것) ----------
+  (function () {
+    var g = screens.g3, tgt = g.querySelector('.target'), tpic = tgt.querySelector('.tpic'), optsBox = g.querySelector('.options'), opts = g.querySelectorAll('.opt');
+    var answer = null, busy = false, hintT = null;
     function showHint() { optsBox.classList.add('hint'); }
+    function say() { tgt.classList.remove('say'); void tgt.offsetWidth; tgt.classList.add('say'); speak(answer.word); }
     function round() {
       busy = false; optsBox.classList.remove('hint');
       answer = pick(ITEMS, answer); var other = pick(ITEMS, answer); var left = rnd(2);
       opts[left].textContent = answer.pic; opts[1 - left].textContent = other.pic;
       opts[left].dataset.ok = '1'; opts[1 - left].dataset.ok = '';
-      if (withSound) { tgt.innerHTML = '<span class="speaker">🔊</span>'; later(function () { speak(answer.word); }, 400); }
-      else { tgt.textContent = answer.pic; }
-      hintT = later(showHint, 1500);           // 1.5초 안 치면 두 선택지가 번갈아 "여기 눌러" 신호
+      tpic.textContent = answer.pic;
+      later(say, 350);
+      hintT = later(showHint, 1800);           // 1.8초 안 치면 두 선택지가 번갈아 "여기 눌러" 신호
     }
-    games[id] = round;
+    games.g3 = round;
     g.addEventListener('pointerdown', function (e) {
       e.preventDefault(); if (!gate() || busy) return;
       var el = document.elementFromPoint(e.clientX, e.clientY);
       if (!el) return;
-      if (el === tgt || tgt.contains(el)) { if (withSound) speak(answer.word); return; }
+      if (el === tgt || tgt.contains(el)) { say(); return; }      // 위 그림을 치면 이름을 다시 들려줌
       var opt = el.closest('.opt'); if (!opt) return;
       clearTimeout(hintT); optsBox.classList.remove('hint');
       if (opt.dataset.ok) {
         busy = true; opt.classList.add('pop'); burst(g, e.clientX, e.clientY); reward(g);
-        later(function () { opt.classList.remove('pop'); round(); }, 2200);
+        later(function () { opt.classList.remove('pop'); round(); }, 2400);
       } else {
-        tgt.classList.remove('pop'); void tgt.offsetWidth; tgt.classList.add('pop');   // 오답: 위 그림만 살짝
-        if (withSound) later(function () { speak(answer.word); }, 300);
-        hintT = later(showHint, 1200);
+        tpic.classList.remove('pop'); void tpic.offsetWidth; tpic.classList.add('pop');   // 오답: 위 그림만 살짝
+        later(say, 300);
+        hintT = later(showHint, 1400);
       }
     });
-  }
-  setupChoose('g3', false); setupChoose('g4', true);
+  })();
 
   // ---------- 6 하나씩 담기 ----------
   games.g6 = function () {
