@@ -5,7 +5,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ella">
-<title>엘라 게임</title>
+<title>Ella's Playground</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>
   /* Layout: parent menu of 7 big tiles; each game takes the whole screen with no visible controls. Single bright look. */
@@ -26,52 +26,92 @@
   .screen { position: absolute; inset: 0; }
   [hidden] { display: none !important; }
 
-  /* ---------- parent menu ---------- */
+  /* ---------- parent menu (glass + jelly) ---------- */
   #menu {
     overflow-y: auto; touch-action: pan-y; box-sizing: border-box;
     padding-block: 0 40px;
     padding-left: max(16px, env(safe-area-inset-left, 0px));
     padding-right: max(16px, env(safe-area-inset-right, 0px));
-    background:
-      radial-gradient(circle at 12% 8%, rgba(255,200,61,.35), transparent 28%),
-      radial-gradient(circle at 88% 4%, rgba(90,176,255,.30), transparent 26%),
-      radial-gradient(circle at 70% 90%, rgba(255,138,194,.25), transparent 30%),
-      var(--bg);
+    background: linear-gradient(160deg, #FFF4EC 0%, #F6EEFB 45%, #EEF3FB 100%);
+    --m-ink: #3B3350; --m-muted: #857C99;
   }
-  .menu-inner { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
-  .hero { padding-block: 28px 4px; display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .hero h1 { font-family: "Fredoka", var(--font); font-weight: 700; font-size: clamp(36px, 7vw, 56px); margin: 0; letter-spacing: -.01em; line-height: 1; color: var(--ink); }
-  .hero h1 span { display: inline-block; }
-  .hero h1 span:nth-child(1) { color: var(--b1); } .hero h1 span:nth-child(2) { color: var(--b4); }
-  .hero h1 span:nth-child(3) { color: var(--b3); } .hero h1 span:nth-child(4) { color: var(--b5); }
-  .hero .sub { font-size: 14px; color: var(--muted); margin: 0; }
+  .menu-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .menu-bg .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .75; animation: mFloat 18s ease-in-out infinite alternate; }
+  .menu-bg .b1 { width: 46vmax; height: 46vmax; left: -12vmax; top: -14vmax; background: #FFD3B8; }
+  .menu-bg .b2 { width: 40vmax; height: 40vmax; right: -14vmax; top: 6vmax; background: #D9C9FF; animation-duration: 22s; }
+  .menu-bg .b3 { width: 38vmax; height: 38vmax; left: 20vmax; bottom: -18vmax; background: #C6F0E0; animation-duration: 26s; }
+  .menu-bg .b4 { width: 28vmax; height: 28vmax; right: 8vmax; bottom: -6vmax; background: #FFC9DF; animation-duration: 20s; }
+  @keyframes mFloat { from { transform: translate(0,0) scale(1); } to { transform: translate(3vmax, 2vmax) scale(1.08); } }
+  .menu-bg .ribbon { position: absolute; left: -5%; top: 18%; width: 110%; height: auto; opacity: .85; filter: blur(.3px);
+                     animation: mDrift 14s ease-in-out infinite alternate; }
+  @keyframes mDrift { from { transform: translateY(0) rotate(-2deg); } to { transform: translateY(2.5vh) rotate(1deg); } }
+  .menu-bg .pearl { position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #fff 0 8%, #fdf6ff 18%, #e9ddf3 45%, #cdbfdc 70%, #f4e6ff 88%, #fff 100%);
+    box-shadow: inset -6px -10px 18px rgba(140,110,170,.25), inset 6px 8px 14px rgba(255,255,255,.8), 0 14px 30px -10px rgba(120,90,160,.35);
+    animation: mBob 7s ease-in-out infinite alternate; }
+  .menu-bg .p1 { width: 74px; height: 74px; right: 9%; top: 96px; }
+  .menu-bg .p2 { width: 40px; height: 40px; left: 6%; top: 46%; animation-duration: 9s; }
+  .menu-bg .p3 { width: 54px; height: 54px; right: 14%; bottom: 12%; animation-duration: 8s; }
+  .menu-bg .bubble { position: absolute; border-radius: 50%; width: 58px; height: 58px; left: 12%; bottom: 20%;
+    background: radial-gradient(circle at 30% 28%, rgba(255,255,255,.95) 0 7%, rgba(255,255,255,.15) 30%, rgba(200,170,255,.18) 70%, rgba(255,200,230,.45) 100%);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.6); animation: mBob 10s ease-in-out infinite alternate; }
+  .menu-bg .drop { position: absolute; width: 34px; height: 46px; right: 22%; top: 46%; border-radius: 50% 50% 50% 50% / 62% 62% 40% 40%;
+    background: radial-gradient(circle at 35% 62%, #fff 0 8%, #FFE7B8 22%, #E8B25C 58%, #B97E2E 100%);
+    box-shadow: 0 10px 20px -8px rgba(185,126,46,.45); animation: mBob 6s ease-in-out infinite alternate; }
+  .menu-bg .drop::before { content: ""; position: absolute; left: 50%; top: -14px; width: 20px; height: 22px; margin-left: -10px;
+    background: inherit; border-radius: 50% 50% 0 50%; transform: rotate(45deg); z-index: -1; }
+  @keyframes mBob { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+
+  .menu-inner { position: relative; z-index: 1; max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+  .hero { padding-block: 26px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .hero h1 { margin: 0 0 0 -6px; width: min(100%, 460px); line-height: 0; cursor: pointer; transform-origin: 50% 85%; }
+  .hero h1 img { width: 100%; height: auto; display: block; -webkit-user-drag: none; pointer-events: none; }
+  .hero h1 { animation: jellyIdle 4.5s ease-in-out infinite; }
+  .hero h1.wobble { animation: jellyWobble .9s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes jellyIdle { 0%,100% { transform: scale(1,1); } 50% { transform: scale(1.012,.988); } }
+  @keyframes jellyWobble {
+    0% { transform: scale(1,1); } 20% { transform: scale(1.08,.88); } 40% { transform: scale(.94,1.08); }
+    60% { transform: scale(1.03,.97); } 80% { transform: scale(.99,1.01); } 100% { transform: scale(1,1); } }
+  .hero .sub { font-size: 14px; color: var(--m-muted); margin: 0 0 0 4px; }
+
   .howto {
     display: flex; gap: 14px; align-items: center; flex-wrap: wrap;
-    background: rgba(255,255,255,.6); border: 1.5px solid rgba(0,0,0,.06); border-radius: 16px; padding: 12px 16px;
-    font-size: 13px; line-height: 1.5; color: var(--ink);
+    background: rgba(255,255,255,.42); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,.75); border-radius: 18px; padding: 12px 16px;
+    box-shadow: 0 10px 30px -18px rgba(110,80,150,.35);
+    font-size: 13px; line-height: 1.5; color: var(--m-ink);
   }
   .howto .k { display: inline-flex; align-items: center; gap: 6px; }
-  .howto .k b { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; background: var(--bg2); font-size: 14px; }
+  .howto .k b { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; align-items: center; justify-content: center; font-size: 13px;
+    background: radial-gradient(circle at 35% 30%, #fff, #F1E6FF 60%, #E2D3F7); box-shadow: inset 0 -2px 4px rgba(120,90,170,.15); }
   .group { display: flex; flex-direction: column; gap: 10px; }
-  .group h2 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 10px; }
-  .group h2::after { content: ""; flex: 1; height: 1.5px; background: rgba(0,0,0,.08); }
-  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .group h2 { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--m-muted); display: flex; align-items: center; gap: 10px; }
+  .group h2::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(133,124,153,.35), transparent); }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
   .tile {
     position: relative; overflow: hidden;
-    background: var(--tile); border: 0; border-radius: 22px;
+    background: linear-gradient(160deg, rgba(255,255,255,.62), rgba(255,255,255,.30));
+    -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
+    border: 1px solid rgba(255,255,255,.8); border-radius: 24px;
     padding: 18px 18px 16px; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; text-align: left;
-    cursor: pointer; font: inherit; color: inherit; min-height: 128px;
-    box-shadow: 0 2px 0 rgba(0,0,0,.06), 0 10px 24px -14px rgba(60,40,0,.25);
-    transition: transform .12s ease;
+    cursor: pointer; font: inherit; color: var(--m-ink); min-height: 128px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 0 0 1px color-mix(in srgb, var(--c) 10%, transparent),
+                0 0 26px -6px color-mix(in srgb, var(--c) 30%, transparent), 0 18px 34px -20px rgba(110,80,150,.45);
+    transition: transform .15s ease, box-shadow .2s ease;
   }
-  .tile::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 6px; background: var(--c); }
+  .tile::before { content: ""; position: absolute; inset: -40% 40% 55% -20%; background: radial-gradient(closest-side, rgba(255,255,255,.7), transparent); pointer-events: none; }
+  .tile::after { content: ""; position: absolute; right: -30px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--c) 28%, transparent), transparent); pointer-events: none; }
   .tile:active { transform: scale(.97); }
-  .tile:focus-visible { outline: 3px solid var(--b4); outline-offset: 2px; }
-  .tile .ico { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 30px; line-height: 1; background: color-mix(in srgb, var(--c) 18%, white); }
-  .tile .nm { font-family: "Fredoka", var(--font); font-weight: 600; font-size: 20px; line-height: 1.1; }
-  .tile .st { font-size: 12.5px; color: var(--muted); line-height: 1.4; }
-  .tile .en { font-size: 11px; color: var(--c); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
-  .foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .tile:focus-visible { outline: 3px solid color-mix(in srgb, var(--c) 60%, white); outline-offset: 2px; }
+  .tile .ico { position: relative; z-index: 1; width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; line-height: 1;
+    background: radial-gradient(circle at 34% 28%, #fff 0 10%, color-mix(in srgb, var(--c) 35%, white) 38%, color-mix(in srgb, var(--c) 70%, white) 72%, var(--c) 100%);
+    box-shadow: inset -4px -6px 10px color-mix(in srgb, var(--c) 45%, transparent), inset 3px 4px 8px rgba(255,255,255,.7),
+                0 0 22px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 16px -8px color-mix(in srgb, var(--c) 70%, black); }
+  .tile .nm { position: relative; z-index: 1; font-family: "Fredoka", var(--font); font-weight: 600; font-size: 20px; line-height: 1.1; }
+  .tile .st { position: relative; z-index: 1; font-size: 12.5px; color: var(--m-muted); line-height: 1.45; }
+  .tile .en { position: relative; z-index: 1; font-size: 11px; color: color-mix(in srgb, var(--c) 80%, black); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+  .foot { font-size: 12.5px; color: var(--m-muted); line-height: 1.5; }
 
   /* ---------- shared game bits ---------- */
   .game { display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
@@ -223,12 +263,33 @@
 </head>
 <body>
 <div id="menu" class="screen">
+  <div class="menu-bg" aria-hidden="true">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+    <svg class="ribbon" viewBox="0 0 1200 320" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="mRib" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#FFC8E4" stop-opacity="0"/>
+          <stop offset=".18" stop-color="#FFC8E4" stop-opacity=".75"/>
+          <stop offset=".4" stop-color="#E5CCFF" stop-opacity=".8"/>
+          <stop offset=".62" stop-color="#C8F1FF" stop-opacity=".75"/>
+          <stop offset=".82" stop-color="#FFE2C4" stop-opacity=".75"/>
+          <stop offset="1" stop-color="#FFC8E4" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="mRib2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".3" stop-color="#fff" stop-opacity=".9"/>
+          <stop offset=".7" stop-color="#fff" stop-opacity=".6"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M-20 230 C 240 70, 470 320, 720 170 S 1060 40, 1220 130" stroke="url(#mRib)" stroke-width="54" fill="none" stroke-linecap="round"/>
+      <path d="M-20 214 C 240 54, 470 304, 720 154 S 1060 24, 1220 114" stroke="url(#mRib2)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div class="pearl p1"></div><div class="pearl p2"></div><div class="pearl p3"></div>
+    <div class="bubble"></div><div class="drop"></div>
+  </div>
   <div class="menu-inner">
     <div class="hero">
-      <div>
-        <h1><span>E</span><span>l</span><span>l</span><span>a</span>'s Games</h1>
-        <p class="sub">엘라를 위한 놀이 8가지 · 한 번에 하나씩</p>
-      </div>
+      <h1 id="jellyTitle"><picture><source srcset="logo-web.webp" type="image/webp"><img src="logo-web.png" alt="Ella's Playground" width="1100" height="632"></picture></h1>
+      <p class="sub">엘라를 위한 놀이 8가지 · 한 번에 하나씩</p>
     </div>
 
     <div class="howto">
@@ -1099,6 +1160,13 @@
     if (!w.classList.contains('show')) { w.classList.add('show'); }
     else { burst(screens.g10, e.clientX, e.clientY); later(games.g10, 1200); }
   });
+
+  // ---------- 메뉴 로고: 누르면 젤리처럼 출렁 ----------
+  (function () {
+    var h = document.getElementById('jellyTitle'); if (!h) return;
+    h.addEventListener('pointerdown', function () { h.classList.remove('wobble'); void h.offsetWidth; h.classList.add('wobble'); });
+    h.addEventListener('animationend', function (e) { if (e.animationName === 'jellyWobble') h.classList.remove('wobble'); });
+  })();
 
   // ---------- 메뉴·종료 ----------
   screens.menu.addEventListener('click', function (e) {
