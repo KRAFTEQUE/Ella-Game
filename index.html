@@ -107,12 +107,54 @@
   #exit.holding::after { opacity: 1; animation: spin 2s linear forwards; }
   @keyframes spin { to { transform: rotate(720deg); } }
 
-  /* 1 풍선 */
-  #g1 { background: linear-gradient(#bfe6ff, #e9f7ff); }
-  .balloon { position: absolute; bottom: -45vmin; width: 34vmin; height: 42vmin; border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
-             animation: rise linear forwards; box-shadow: inset -12px -18px 0 rgba(0,0,0,.08); }
-  .balloon::after { content: ""; position: absolute; left: 50%; bottom: -28px; width: 4px; height: 30px; background: rgba(0,0,0,.25); transform: translateX(-50%); }
-  @keyframes rise { to { bottom: 110vh; } }
+  /* 1 풍선 — 단계형 풍선 + 카운터 + 30개 피날레 */
+  #g1 { background: linear-gradient(180deg, #BFE6FF 0%, #E4F4FF 55%, #FFF4EA 100%); overflow: hidden; }
+  #g1 .bp-clouds, #g1 .bp-balloons, #g1 .bp-fx { position: absolute; inset: 0; }
+  #g1 .bp-fx { pointer-events: none; z-index: 10; }
+  .bp-cloud { position: absolute; background: #fff; border-radius: 999px; opacity: .75; filter: blur(1px); }
+  .bp-cloud::before, .bp-cloud::after { content: ""; position: absolute; background: #fff; border-radius: 50%; }
+  .bp-cloud::before { width: 55%; height: 150%; left: 15%; top: -70%; }
+  .bp-cloud::after { width: 40%; height: 120%; right: 12%; top: -45%; }
+  @keyframes bpDrift { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
+  .bp-balloon { position: absolute; left: 0; top: 0; will-change: transform; }
+  .bp-balloon svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .bp-bx { transform-origin: 50% 38%; animation: bpWobble 2.4s ease-in-out infinite alternate; }
+  @keyframes bpWobble { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+  .bp-eyes-happy { display: none; }
+  .bp-happy .bp-eyes-open { display: none; }
+  .bp-happy .bp-eyes-happy { display: inline; }
+  .bp-p { position: absolute; left: 0; top: 0; line-height: 1; font-weight: 900; will-change: transform, opacity; }
+  .bp-ring { position: absolute; border-radius: 50%; border: 5px solid; will-change: transform, opacity; }
+  .bp-word { position: absolute; font-weight: 900; white-space: nowrap; letter-spacing: .5px; font-family: "Avenir Next", var(--font);
+             -webkit-text-stroke: 2px #fff; paint-order: stroke fill; text-shadow: 0 3px 0 rgba(0,0,0,.08); }
+  .bp-counter { position: absolute; left: 50%; top: calc(14px + env(safe-area-inset-top, 0px)); transform: translateX(-50%);
+                z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 7px; pointer-events: none; }
+  .bp-pill { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 999px; padding: 6px 24px 6px 16px;
+             box-shadow: 0 6px 18px rgba(80,120,180,.18); }
+  .bp-icon { font-size: clamp(26px, 4.2vw, 40px); display: inline-block; }
+  .bp-num { font-family: "Avenir Next", var(--font); font-weight: 900; font-size: clamp(32px, 5.4vw, 54px); min-width: 1.3em;
+            text-align: center; color: #FF6F9F; display: inline-block; line-height: 1.1; }
+  .bp-bar { width: clamp(150px, 24vw, 260px); height: 12px; background: rgba(255,255,255,.75); border-radius: 99px; overflow: hidden;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
+  .bp-fill { height: 100%; width: 0; background: linear-gradient(90deg, #FFB84D, #FF8FB8, #A77BF0); border-radius: 99px;
+             transition: width .4s cubic-bezier(.3,1.6,.5,1); }
+  .bp-banner { position: absolute; left: 50%; top: 30%; transform: translate(-50%,-50%) scale(0); z-index: 6;
+               padding: 14px 30px; border-radius: 999px; background: #fff; font-family: "Avenir Next", var(--font); font-weight: 900;
+               font-size: clamp(24px, 4.4vw, 42px); box-shadow: 0 8px 24px rgba(80,120,180,.18); white-space: nowrap; pointer-events: none; }
+  .bp-bunch { position: absolute; left: 0; top: 0; will-change: transform; z-index: 3; }
+  .bp-bunch .bp-str { display: none; }
+  .bp-bunch svg.bp-lines { position: absolute; left: 0; top: 0; overflow: visible; pointer-events: none; }
+  .bp-bow { position: absolute; transform: translate(-50%,-30%); pointer-events: none; line-height: 1; }
+  .bp-end { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 22px;
+            z-index: 8; background: rgba(255,255,255,.45); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .bp-title { font-family: "Avenir Next", var(--font); font-weight: 900; font-size: clamp(40px, 7.5vw, 78px); color: #FF6F9F;
+              -webkit-text-stroke: 3px #fff; paint-order: stroke fill; text-shadow: 0 5px 0 rgba(224,79,130,.18); text-align: center; }
+  .bp-count { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 999px; padding: 10px 34px;
+              font-family: "Avenir Next", var(--font); font-weight: 900; font-size: clamp(36px, 6vw, 60px); box-shadow: 0 8px 24px rgba(80,120,180,.18); }
+  .bp-again { border: 0; border-radius: 999px; padding: 24px 52px; font-family: "Avenir Next", var(--font); font-weight: 900;
+              font-size: clamp(28px, 5vw, 46px); color: #fff; background: linear-gradient(180deg, #FF9EC2, #FF6F9F);
+              box-shadow: 0 10px 0 #E04F82, 0 18px 30px rgba(224,79,130,.3); animation: bpBreathe 1.6s ease-in-out infinite; }
+  @keyframes bpBreathe { 50% { transform: scale(1.06); } }
 
   /* 2 큰 피아노 — 장난감 피아노 건반 네 개 */
   #g2 { display: flex; background: #2b2340; gap: 1.2vw; padding: 3vh 1.2vw 0; box-sizing: border-box; align-items: stretch; }
@@ -200,7 +242,7 @@
       <h2>인과관계</h2>
       <div class="tiles">
         <button class="tile" data-g="g0" style="--c: var(--b1)"><span class="ico">👏</span><span class="nm">쎄쎄쎄</span><span class="st">어디를 쳐도 손뼉이 짝 하고 노래가 한 소절씩 이어져요.</span><span class="en">Clap</span></button>
-        <button class="tile" data-g="g1" style="--c: var(--b4)"><span class="ico">🎈</span><span class="nm">풍선 터뜨리기</span><span class="st">올라오는 풍선을 치면 터져요. 움직이는 것을 겨냥하는 연습.</span><span class="en">Pop</span></button>
+        <button class="tile" data-g="g1" style="--c: var(--b4)"><span class="ico">🎈</span><span class="nm">풍선 터뜨리기</span><span class="st">풍선을 치면 웃으며 터져요. 터뜨릴수록 특별한 풍선이 나오고, 30개면 풍선 다발 피날레.</span><span class="en">Pop</span></button>
         <button class="tile" data-g="g2" style="--c: var(--b2)"><span class="ico">🎹</span><span class="nm">큰 피아노</span><span class="st">건반 네 개를 치면 건반마다 다른 음이 나요. 어디를 치느냐가 달라지는 연습.</span><span class="en">Big piano</span></button>
       </div>
     </div>
@@ -247,7 +289,18 @@
   </svg>
 </div>
 
-<div id="g1" class="screen game" hidden></div>
+<div id="g1" class="screen game" hidden>
+  <div class="bp-clouds"></div>
+  <div class="bp-balloons"></div>
+  <div class="bp-counter"><div class="bp-pill"><span class="bp-icon">🎈</span><span class="bp-num">0</span></div><div class="bp-bar"><div class="bp-fill"></div></div></div>
+  <div class="bp-fx"></div>
+  <div class="bp-banner"></div>
+  <div class="bp-end" hidden>
+    <div class="bp-title"></div>
+    <div class="bp-count"><span>🎈</span><span class="bp-endnum">0</span></div>
+    <button class="bp-again">Play again ▶</button>
+  </div>
+</div>
 
 <div id="g2" class="screen game" hidden>
   <div class="pad" data-n="0" style="--k:#ff5c5c"></div>
@@ -432,6 +485,10 @@
     if (games[id]) games[id]();
   }
   function finish() {
+    if (current === 'g1' && BP.sessionEnd()) return;   // 풍선 게임은 피날레로 마무리
+    finishNow();
+  }
+  function finishNow() {
     ended = true; try { speechSynthesis.cancel(); } catch (e) {}
     veil.classList.add('on');
     later(function () { backToMenu(); }, 9000);
@@ -458,25 +515,471 @@
     later(function () { speak(PHRASES[phraseIdx % PHRASES.length], 1, 'ko-KR'); phraseIdx++; }, 120);
   });
 
-  // ---------- 1 풍선 ----------
-  games.g1 = function () {
-    var g = screens.g1;
-    function spawn() {
-      if (current !== 'g1') return;
-      var b = document.createElement('div'); b.className = 'balloon';
-      b.style.left = (5 + Math.random() * 60) + 'vw'; b.style.background = cssVar(rnd(6));
-      b.style.animationDuration = (9 + Math.random() * 5) + 's';
-      g.appendChild(b); later(function () { b.remove(); }, 15000);
-      later(spawn, 1600 + Math.random() * 1200);
+  // ---------- 1 풍선 (단계형 풍선 + 카운터 + 30개 피날레) ----------
+  // 터트린 개수 기준으로 단계가 올라감: 흰·파랑 → 색깔·무지개 → 메탈릭 포일 → 하트 → 강아지.
+  // 30개를 터트리면(또는 3분 세션이 끝나면) 지금까지 터트린 풍선이 한 다발로 올라오는 피날레.
+  var BP = (function () {
+    const root = screens.g1;
+    const layer = root.querySelector('.bp-balloons'), fx = root.querySelector('.bp-fx');
+    const $ = (s) => root.querySelector(s);
+
+    const GOAL = 30;
+    const STAGES = [
+      { at: 0,  pool: { white: 5, blue: 5 } },
+      { at: 6,  pool: { white: 3, blue: 3, pink: 2, orange: 2, rainbow: 1 } },
+      { at: 12, pool: { white: 3, blue: 3, pink: 2, orange: 2, rainbow: 1, foilGold: .8, foilPink: .8, foilSilver: .8 } },
+      { at: 18, pool: { white: 2, blue: 2, pink: 2, orange: 2, rainbow: 1, foilGold: .7, foilPink: .7, foilSilver: .7, heart: 2.5 } },
+      { at: 24, pool: { white: 2, blue: 2, pink: 2, orange: 2, rainbow: 1, foilGold: .6, foilPink: .6, foilSilver: .6, heart: 2, dog: 2 } }
+    ];
+    const SPEED = { base: 48, perPop: 1.5, max: 100 };      // px/초
+    const SPAWN = { base: 1900, perPop: 28, min: 1000 };    // 풍선 사이 간격 ms
+    const MAX_ON_SCREEN = 6;
+    const FINALE_SECONDS = 11;
+
+    const TYPES = {
+      white:     { shape: 'round',  fill: 'plain',   c: ['#FFFFFF','#FFFFFF','#CDD6E4'], str: '#B9C2CF', fx: ['#9CC8FF','#FFB3CF','#FFD966'] },
+      blue:      { shape: 'round',  fill: 'plain',   c: ['#B7DCFF','#5AA9F5','#2B66B8'], str: '#7FA6CF', fx: ['#5AA9F5','#9FD3FF','#FFD966'] },
+      pink:      { shape: 'round',  fill: 'plain',   c: ['#FFD0E1','#FF8FB8','#D9467A'], str: '#E79AB6', fx: ['#FF8FB8','#FFC4DA','#FFD966'] },
+      orange:    { shape: 'round',  fill: 'plain',   c: ['#FFE0B5','#FFA94D','#D9700A'], str: '#E6B17A', fx: ['#FFA94D','#FFD39E','#FF8FB8'] },
+      rainbow:   { shape: 'round',  fill: 'rainbow', c: ['#FFF','#FF8FB8','#7A5BD6'], str: '#C3B4E6', fx: ['#FF6B6B','#FFB84D','#FFE14D','#6BD48A','#5AA9F5','#A77BF0'], special: true },
+      foilGold:  { shape: 'star',   fill: 'foil', foil: 'gold',   str: '#D4B25A', fx: ['#FFD54A','#FFF2A8','#FFB84D'], special: true, rare: true },
+      foilPink:  { shape: 'flower', fill: 'foil', foil: 'pink',   str: '#E7A1BE', fx: ['#FF8FB8','#FFD0E1','#FFD54A'], special: true, rare: true },
+      foilSilver:{ shape: 'round',  fill: 'foil', foil: 'silver', str: '#AEB6C2', fx: ['#C9D3E0','#9CC8FF','#FFD0E1'], special: true, rare: true },
+      heart:     { shape: 'heart',  fill: 'plain',   c: ['#FFC2CC','#FF6B81','#CF3550'], str: '#E79AA6', fx: ['#FF6B81','#FFB0BC','#FFD966'], special: true },
+      dog:       { shape: 'dog',    fill: 'plain',   c: ['#C7E6FF','#4F9BF2','#2059B0'], str: 'none',    fx: ['#4F9BF2','#9FD3FF','#FFD966','#FF8FB8'], special: true, rare: true }
+    };
+    const FOILS = {
+      gold:   ['#FFF7CF','#F2C230','#A9790A','#FFE57A','#C4900F','#FFF3B5','#9C6C05'],
+      pink:   ['#FFE6F0','#F37AAA','#B83A6E','#FFC3DA','#D9568B','#FFE0EC','#A52E5E'],
+      silver: ['#FFFFFF','#C9D1DC','#7E8896','#F1F4F8','#9AA4B2','#FFFFFF','#6F7986']
+    };
+
+    // ----- 그림 (SVG) -----
+    let uid = 0;
+    function face(cx, cy, s) {
+      const L = cx - 14 * s, R = cx + 14 * s;
+      const happy = (x) => `M${x - 5.5 * s} ${cy + 1.5 * s} Q${x} ${cy - 6.5 * s} ${x + 5.5 * s} ${cy + 1.5 * s}`;
+      return `<g>
+        <ellipse cx="${cx - 22 * s}" cy="${cy + 11 * s}" rx="${7 * s}" ry="${4.5 * s}" fill="#FF7B9C" opacity=".45"/>
+        <ellipse cx="${cx + 22 * s}" cy="${cy + 11 * s}" rx="${7 * s}" ry="${4.5 * s}" fill="#FF7B9C" opacity=".45"/>
+        <g class="bp-eyes-open">
+          <circle cx="${L}" cy="${cy}" r="${5.5 * s}" fill="#3B2B2B"/><circle cx="${L + 1.8 * s}" cy="${cy - 2 * s}" r="${1.9 * s}" fill="#fff"/>
+          <circle cx="${R}" cy="${cy}" r="${5.5 * s}" fill="#3B2B2B"/><circle cx="${R + 1.8 * s}" cy="${cy - 2 * s}" r="${1.9 * s}" fill="#fff"/>
+        </g>
+        <g class="bp-eyes-happy" fill="none" stroke="#3B2B2B" stroke-width="${3.4 * s}" stroke-linecap="round"><path d="${happy(L)}"/><path d="${happy(R)}"/></g>
+        <path d="M${cx - 9 * s} ${cy + 10 * s} Q${cx} ${cy + 19 * s} ${cx + 9 * s} ${cy + 10 * s}" fill="none" stroke="#3B2B2B" stroke-width="${3.4 * s}" stroke-linecap="round"/>
+      </g>`;
     }
-    spawn(); later(spawn, 700);
-  };
-  screens.g1.addEventListener('pointerdown', function (e) {
-    e.preventDefault(); if (!gate()) return;
-    var el = document.elementFromPoint(e.clientX, e.clientY);
-    var hit = el && el.classList.contains('balloon');
-    if (hit) { el.remove(); bang(); burst(screens.g1, e.clientX, e.clientY); } else { blip(); }
-  });
+    function paintDefs(t, id, box) {
+      const [x0, y0, x1, y1] = box, w = x1 - x0, h = y1 - y0, r = Math.max(w, h) * .78;
+      if (t.fill === 'plain') {
+        return `<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="${x0 + w * .36}" cy="${y0 + h * .3}" r="${r}">
+          <stop offset="0" stop-color="${t.c[0]}"/><stop offset=".45" stop-color="${t.c[1]}"/><stop offset="1" stop-color="${t.c[2]}"/></radialGradient>`;
+      }
+      if (t.fill === 'rainbow') {
+        return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}">
+          <stop offset="0" stop-color="#FF6B6B"/><stop offset=".2" stop-color="#FFB84D"/><stop offset=".4" stop-color="#FFE14D"/>
+          <stop offset=".6" stop-color="#6BD48A"/><stop offset=".8" stop-color="#5AA9F5"/><stop offset="1" stop-color="#A77BF0"/></linearGradient>
+          <radialGradient id="${id}s" gradientUnits="userSpaceOnUse" cx="${x0 + w * .36}" cy="${y0 + h * .3}" r="${r}">
+          <stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#2a1a4a" stop-opacity=".28"/></radialGradient>`;
+      }
+      const f = FOILS[t.foil];
+      return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}">
+        ${f.map((c, i) => `<stop offset="${(i / (f.length - 1)).toFixed(3)}" stop-color="${c}"/>`).join('')}</linearGradient>
+        <linearGradient id="${id}s" gradientUnits="userSpaceOnUse" x1="${x0}" y1="${y1}" x2="${x1}" y2="${y0}">
+        <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".46" stop-color="#fff" stop-opacity="0"/>
+        <stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`;
+    }
+    function svgFor(type) {
+      const t = TYPES[type], id = 'bpg' + (++uid);
+      const F = `url(#${id})`, S = `url(#${id}s)`;
+      const str = (y) => t.str === 'none' ? '' :
+        `<path class="bp-str" d="M60 ${y} q -9 14 0 28 q 9 14 0 28" fill="none" stroke="${t.str}" stroke-width="1.8" stroke-linecap="round"/>`;
+      const hl = (x, y, rx, ry, rot) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${x} ${y})" fill="#fff" opacity=".75"/>`;
+      let body = '', vb = '0 0 120 186';
+      const knotC = t.c ? t.c[2] : '#999';
+      if (t.shape === 'round') {
+        const p = 'M60 6 C94 6 112 32 112 62 C112 94 86 118 60 122 C34 118 8 94 8 62 C8 32 26 6 60 6 Z';
+        const foil = t.fill === 'foil';
+        body = `<defs>${paintDefs(t, id, [8, 6, 112, 122])}</defs>${str(foil ? 110 : 128)}
+          ${foil ? '' : `<path d="M53 130 L67 130 L60 120 Z" fill="${knotC}"/>`}
+          <path d="${p}" fill="${F}" ${foil ? 'stroke="rgba(0,0,0,.12)" stroke-width="1.5"' : ''}/>
+          ${t.fill !== 'plain' ? `<path d="${p}" fill="${S}"/>` : ''}
+          ${hl(38, 34, 9, 16, -28)}<circle cx="34" cy="58" r="3.2" fill="#fff" opacity=".7"/>${face(60, 64, 1)}`;
+      } else if (t.shape === 'heart') {
+        const p = 'M60 116 C22 90 8 64 8 42 C8 20 24 8 41 8 C51 8 57 14 60 22 C63 14 69 8 79 8 C96 8 112 20 112 42 C112 64 98 90 60 116 Z';
+        body = `<defs>${paintDefs(t, id, [8, 8, 112, 116])}</defs>${str(124)}
+          <path d="M53 126 L67 126 L60 116 Z" fill="${knotC}"/><path d="${p}" fill="${F}"/>
+          ${hl(30, 30, 8, 13, -35)}<circle cx="26" cy="52" r="3" fill="#fff" opacity=".7"/>${face(60, 52, 1)}`;
+      } else if (t.shape === 'star') {
+        const pts = [];
+        for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 23 : 46; pts.push((60 + r * Math.cos(a)).toFixed(1) + ',' + (64 + r * Math.sin(a)).toFixed(1)); }
+        const poly = pts.join(' ');
+        body = `<defs>${paintDefs(t, id, [6, 10, 114, 118])}</defs>${str(104)}
+          <polygon points="${poly}" fill="${F}" stroke="${F}" stroke-width="18" stroke-linejoin="round"/>
+          <polygon points="${poly}" fill="${S}" stroke="${S}" stroke-width="18" stroke-linejoin="round"/>
+          ${hl(44, 40, 6, 12, -30)}${face(60, 68, .95)}`;
+      } else if (t.shape === 'flower') {
+        let petals = '';
+        for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / 5; petals += `<circle cx="${(60 + 30 * Math.cos(a)).toFixed(1)}" cy="${(62 + 30 * Math.sin(a)).toFixed(1)}" r="27"/>`; }
+        const g = (fill) => `<g fill="${fill}">${petals}<circle cx="60" cy="62" r="30"/></g>`;
+        body = `<defs>${paintDefs(t, id, [3, 5, 117, 119])}</defs>${str(108)}${g(F)}${g(S)}${hl(46, 26, 6, 11, -30)}${face(60, 64, .95)}`;
+      } else {  // dog
+        vb = '0 0 168 140';
+        const dark = `url(#${id}d)`;
+        const e = (cx, cy, rx, ry, rot = 0, fill = F) => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" transform="rotate(${rot} ${cx} ${cy})" fill="${fill}"/>`;
+        body = `<defs>${paintDefs(t, id, [0, 0, 168, 140])}
+          <radialGradient id="${id}d" gradientUnits="userSpaceOnUse" cx="60" cy="40" r="150"><stop offset="0" stop-color="${t.c[1]}"/><stop offset="1" stop-color="${t.c[2]}"/></radialGradient></defs>
+          ${e(80, 104, 9, 23, 4, dark)}${e(120, 104, 9, 23, -4, dark)}${e(60, 20, 8, 15, 16, dark)}
+          ${e(146, 56, 7, 16, 25)}${e(104, 76, 37, 14)}${e(66, 106, 10, 24, -3)}${e(134, 106, 10, 24, 3)}
+          ${e(64, 62, 11, 18, 18)}${e(48, 18, 8, 15, -12)}${e(24, 46, 20, 11)}${e(52, 40, 16, 15)}
+          ${hl(100, 68, 13, 3.5, -3)}${hl(46, 32, 4, 6, -30)}${hl(18, 42, 6, 3, -8)}${face(52, 42, .5)}`;
+      }
+      return { html: `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg">${body}</svg>`, aspect: t.shape === 'dog' ? 168 / 140 : 120 / 186 };
+    }
+
+    // ----- 상태 -----
+    let balloons = [], byEl = new Map(), pops = 0, shown = 0, history = [], stageIdx = 0, sinceSpawn = 0;
+    let mode = 'idle';             // idle | play | finale-intro | finale | end
+    let bunch = null, sessionOver = false, rafId = null, last = 0;
+
+    const vmin = () => Math.min(innerWidth, innerHeight);
+    const baseW = () => Math.max(84, Math.min(150, vmin() * 0.17));
+    const speed = () => Math.min(SPEED.max, SPEED.base + Math.min(pops, GOAL) * SPEED.perPop);
+    const spawnGap = () => Math.max(SPAWN.min, SPAWN.base - pops * SPAWN.perPop);
+
+    function weightedPick(pool, exclude) {
+      const entries = Object.entries(pool).filter(([k]) => !exclude || !exclude(k));
+      let r = Math.random() * entries.reduce((s, [, w]) => s + w, 0);
+      for (const [k, w] of entries) { if ((r -= w) <= 0) return k; }
+      return entries[0][0];
+    }
+    function pickType() {
+      const rareOnScreen = balloons.some(b => !b.popping && TYPES[b.type].rare);
+      return weightedPick(STAGES[stageIdx].pool, k => rareOnScreen && TYPES[k].rare);
+    }
+    function makeBalloonEl(type, w) {
+      const { html, aspect } = svgFor(type);
+      const el = document.createElement('div');
+      el.className = 'bp-balloon'; el.style.width = w + 'px';
+      el.innerHTML = `<div class="bp-bx" style="animation-delay:${(-Math.random() * 2.4).toFixed(2)}s">${html}</div>`;
+      return { el, h: w / aspect };
+    }
+    function spawn() {
+      const type = pickType(), t = TYPES[type];
+      const w = baseW() * (t.shape === 'dog' ? 1.45 : 1);
+      const { el, h } = makeBalloonEl(type, w);
+      layer.appendChild(el);
+      const b = { el, type, w, h, x: 12 + Math.random() * (innerWidth - w - 24), y: innerHeight + 10,
+        phase: Math.random() * Math.PI * 2, amp: 8 + Math.random() * 14, freq: .6 + Math.random() * .5,
+        vmul: .9 + Math.random() * .2, t: 0, popping: false };
+      balloons.push(b); byEl.set(el, b); place(b);
+    }
+    function place(b) {
+      b.el.style.transform = `translate(${b.x + Math.sin(b.t * b.freq + b.phase) * b.amp}px, ${b.y}px)`;
+    }
+
+    function frame(now) {
+      if (current !== 'g1') { cleanup(); rafId = null; return; }   // 메뉴로 나가면 정리하고 멈춤
+      const dt = Math.min(50, now - (last || now)); last = now;
+      if (mode === 'play') {
+        sinceSpawn += dt;
+        if (sinceSpawn >= spawnGap() && balloons.filter(b => !b.popping).length < MAX_ON_SCREEN) { spawn(); sinceSpawn = 0; }
+        const v = speed();
+        for (const b of balloons) {
+          if (b.popping) continue;
+          b.t += dt / 1000; b.y -= v * b.vmul * dt / 1000; place(b);
+          if (b.y < -b.h - 20) { b.el.remove(); b.gone = true; }      // 놓친 풍선: 벌점 없음
+        }
+        balloons = balloons.filter(b => !b.gone);
+      }
+      if (mode === 'finale' && bunch) moveBunch(dt);
+      rafId = requestAnimationFrame(frame);
+    }
+
+    // ----- 터지기 -----
+    const WORDS = ['Pop!', 'Yay!', 'Pop!', 'Boing!'], SPECIAL_WORDS = ['Wow!', 'Super!', 'Yay!'];
+    function pop(b) {
+      if (!b || b.popping || mode === 'end' || mode === 'idle') return;
+      b.popping = true;
+      const t = TYPES[b.type], r = b.el.getBoundingClientRect();
+      const cx = r.left + r.width / 2, cy = r.top + (t.shape === 'dog' ? r.height * .45 : r.height * .36);
+      const bx = b.el.querySelector('.bp-bx');
+      b.el.querySelector('svg').classList.add('bp-happy');          // 웃는 눈 → 말랑하게 찌그러졌다 터짐
+      bx.style.animation = 'none';
+      bx.animate([
+        { transform: 'scale(1,1)' }, { transform: 'scale(1.16,.84)', offset: .3 },
+        { transform: 'scale(.9,1.12)', offset: .55 }, { transform: 'scale(1.45,1.45)', opacity: 0 }
+      ], { duration: 360, easing: 'ease-out', fill: 'forwards' });
+      popSfx(t.special);
+      pops++;
+      if (!b.inBunch) history.push(b.type);
+      later(() => {
+        burst(cx, cy, t, b.inBunch ? .8 : 1, true);
+        if (b.line) b.line.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 250, fill: 'forwards' });
+        flyToCounter(cx, cy);
+        if (mode === 'play') {
+          updateStage();
+          if (pops >= GOAL) later(startFinale, 650);
+        }
+        if (b.inBunch) checkBunchDone();
+      }, 170);
+      later(() => { b.el.remove(); byEl.delete(b.el); balloons = balloons.filter(x => x !== b); }, 420);
+    }
+    function burst(cx, cy, t, k, word) {
+      const big = !!t.special, scale = baseW() / 120 * k;
+      const ring = document.createElement('div'), rs = 90 * scale * (big ? 1.3 : 1);
+      ring.className = 'bp-ring';
+      Object.assign(ring.style, { width: rs + 'px', height: rs + 'px', left: (cx - rs / 2) + 'px', top: (cy - rs / 2) + 'px', borderColor: t.fx[0] });
+      fx.appendChild(ring);
+      ring.animate([{ transform: 'scale(.3)', opacity: .9 }, { transform: 'scale(1.9)', opacity: 0 }], { duration: 480, easing: 'ease-out' }).onfinish = () => ring.remove();
+      const n = big ? 18 : 11, shapes = big ? ['★', '♥', '●', '★', '✦'] : ['★', '●', '♥', '●'];
+      for (let i = 0; i < n; i++) {
+        const p = document.createElement('div');
+        p.className = 'bp-p'; p.textContent = shapes[i % shapes.length]; p.style.color = t.fx[i % t.fx.length];
+        p.style.fontSize = (14 + Math.random() * 16) * scale * (big ? 1.15 : 1) + 'px';
+        p.style.left = cx + 'px'; p.style.top = cy + 'px';
+        fx.appendChild(p);
+        const a = (i / n) * Math.PI * 2 + Math.random() * .4, dist = (70 + Math.random() * 70) * scale * (big ? 1.35 : 1);
+        const dx = Math.cos(a) * dist, dy = Math.sin(a) * dist, rot = (Math.random() * 2 - 1) * 260;
+        p.animate([
+          { transform: 'translate(-50%,-50%) translate(0,0) scale(.2) rotate(0deg)', opacity: 1 },
+          { transform: `translate(-50%,-50%) translate(${dx * .85}px,${dy * .85}px) scale(1.15) rotate(${rot / 2}deg)`, opacity: 1, offset: .5 },
+          { transform: `translate(-50%,-50%) translate(${dx}px,${dy + 36 * scale}px) scale(.3) rotate(${rot}deg)`, opacity: 0 }
+        ], { duration: 780 + Math.random() * 320, easing: 'cubic-bezier(.15,.7,.35,1)' }).onfinish = () => p.remove();
+      }
+      if (!word) return;
+      const list = big ? SPECIAL_WORDS : WORDS;
+      popWord(cx, cy, list[Math.floor(Math.random() * list.length)], t.fx[0] === '#9CC8FF' ? '#FF8FB8' : t.fx[0], (big ? 46 : 34) * Math.max(.75, scale));
+    }
+    function popWord(x, y, text, color, size) {
+      const w = document.createElement('div');
+      w.className = 'bp-word'; w.textContent = text; w.style.color = color; w.style.fontSize = size + 'px';
+      w.style.left = x + 'px'; w.style.top = y + 'px';
+      fx.appendChild(w);
+      w.animate([
+        { transform: 'translate(-50%,-50%) scale(0)', opacity: 1 },
+        { transform: 'translate(-50%,-90%) scale(1.25)', opacity: 1, offset: .25 },
+        { transform: 'translate(-50%,-110%) scale(1)', opacity: 1, offset: .6 },
+        { transform: 'translate(-50%,-180%) scale(.9)', opacity: 0 }
+      ], { duration: 950, easing: 'ease-out' }).onfinish = () => w.remove();
+    }
+
+    // ----- 카운터: 별이 날아가 닿으면 숫자가 뿅 -----
+    function flyToCounter(x, y) {
+      const r = $('.bp-num').getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + r.height / 2;
+      const s = document.createElement('div');
+      s.className = 'bp-p'; s.textContent = '★'; s.style.color = '#FFC93C'; s.style.fontSize = '28px';
+      s.style.left = x + 'px'; s.style.top = y + 'px'; s.style.textShadow = '0 0 8px rgba(255,201,60,.7)';
+      fx.appendChild(s);
+      const mx = (x + tx) / 2 + (Math.random() * 2 - 1) * 90, my = Math.min(y, ty) - 40;
+      s.animate([
+        { transform: 'translate(-50%,-50%) scale(.5)' },
+        { transform: `translate(-50%,-50%) translate(${mx - x}px,${my - y}px) scale(1.25) rotate(180deg)`, offset: .5 },
+        { transform: `translate(-50%,-50%) translate(${tx - x}px,${ty - y}px) scale(.6) rotate(360deg)` }
+      ], { duration: 560, easing: 'ease-in' }).onfinish = () => { s.remove(); if (mode !== 'idle') { shown++; bumpCounter(); } };
+    }
+    const COUNTER_WORDS = ['Yay!', '+1', 'Pop!', '+1', 'Wow!'];
+    function setCounter(n) {
+      shown = n; $('.bp-num').textContent = n; $('.bp-fill').style.width = Math.min(100, n / GOAL * 100) + '%';
+    }
+    function bumpCounter() {
+      setCounter(shown);
+      $('.bp-num').animate([
+        { transform: 'scale(1)' }, { transform: 'scale(1.6) rotate(-8deg)', color: '#FFB84D', offset: .3 },
+        { transform: 'scale(.88) rotate(4deg)', offset: .6 }, { transform: 'scale(1)' }
+      ], { duration: 440, easing: 'ease-out' });
+      $('.bp-icon').animate([{ transform: 'rotate(0)' }, { transform: 'rotate(-18deg) scale(1.15)' }, { transform: 'rotate(10deg)' }, { transform: 'rotate(0)' }], { duration: 440 });
+      const pr = $('.bp-pill').getBoundingClientRect(), cx = pr.left + pr.width / 2, cy = pr.top + pr.height / 2;
+      const colors = ['#FFC93C', '#FF8FB8', '#9CC8FF', '#A77BF0'];
+      for (let i = 0; i < 7; i++) {
+        const p = document.createElement('div');
+        p.className = 'bp-p'; p.textContent = i % 2 ? '✦' : '★'; p.style.color = colors[i % colors.length];
+        p.style.fontSize = (12 + Math.random() * 8) + 'px'; p.style.left = cx + 'px'; p.style.top = cy + 'px';
+        fx.appendChild(p);
+        const a = Math.PI * (.05 + .9 * (i / 6)), d = pr.width * .5 + 20 + Math.random() * 24;
+        const dx = Math.cos(a) * d * (i % 2 ? 1 : -1), dy = Math.sin(a) * d * .55;
+        p.animate([
+          { transform: 'translate(-50%,-50%) scale(.3)', opacity: 1 },
+          { transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) scale(1)`, opacity: 1, offset: .5 },
+          { transform: `translate(-50%,-50%) translate(${dx * 1.15}px,${dy + 14}px) scale(.2)`, opacity: 0 }
+        ], { duration: 620, easing: 'ease-out' }).onfinish = () => p.remove();
+      }
+      const side = Math.random() < .5 ? -1 : 1;
+      popWord(cx + side * (pr.width / 2 + 34), cy + 6, COUNTER_WORDS[Math.floor(Math.random() * COUNTER_WORDS.length)], side < 0 ? '#FF6F9F' : '#A77BF0', 24);
+      sfxTone(1760 + Math.min(shown, 30) * 12, 0, .12, .12, 'sine');
+    }
+
+    // ----- 단계 배너 -----
+    function updateStage() {
+      let idx = 0;
+      STAGES.forEach((s, i) => { if (pops >= s.at) idx = i; });
+      if (idx !== stageIdx) { stageIdx = idx; if (pops < GOAL) showBanner('New balloons! ✨'); }
+    }
+    function showBanner(text) {
+      const el = $('.bp-banner');
+      el.textContent = text;
+      el.getAnimations().forEach(a => a.cancel());
+      el.animate([
+        { transform: 'translate(-50%,-50%) scale(0)' }, { transform: 'translate(-50%,-50%) scale(1.15)', offset: .15 },
+        { transform: 'translate(-50%,-50%) scale(1)', offset: .25 }, { transform: 'translate(-50%,-50%) scale(1)', offset: .85 },
+        { transform: 'translate(-50%,-50%) scale(0)' }
+      ], { duration: 1800, easing: 'ease-out' });
+    }
+
+    // ----- 피날레: 터트린 풍선이 한 다발로 -----
+    function startFinale() {
+      if (mode !== 'play') return;
+      mode = 'finale-intro';
+      balloons.forEach(b => {
+        if (b.popping) return;
+        b.popping = true;
+        b.el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 500, fill: 'forwards' }).onfinish = () => b.el.remove();
+      });
+      balloons = [];
+      showBanner('You did it! 🎉');
+      fanfare(false);
+      later(() => { buildBunch(); mode = 'finale'; showBanner('Pop them all! 🎈'); }, 2000);
+    }
+    function buildBunch() {
+      let list = history.slice(-GOAL);
+      if (!list.length) list = ['white', 'blue', 'pink'];
+      list = list.sort(() => Math.random() - .5);
+      list.sort((a, b) => (TYPES[b].special ? 1 : 0) - (TYPES[a].special ? 1 : 0));   // 특별 풍선은 가운데로
+      const bw = baseW() * 0.6, gap = bw * 0.52;
+      const items = list.map((type, i) => { const a = i * 2.39996, r = gap * Math.sqrt(i + .3); return { type, x: Math.cos(a) * r, y: Math.sin(a) * r * .82 }; });
+      const xs = items.map(i => i.x), ys = items.map(i => i.y);
+      const minX = Math.min(...xs) - bw, maxX = Math.max(...xs) + bw, minY = Math.min(...ys) - bw, maxY = Math.max(...ys) + bw * .6;
+      const knotY = maxY + bw * 1.5, W = maxX - minX, H = knotY - minY + bw, ox = -minX, oy = -minY;
+      const wrap = document.createElement('div');
+      wrap.className = 'bp-bunch'; wrap.style.width = W + 'px'; wrap.style.height = H + 'px';
+      const NS = 'http://www.w3.org/2000/svg', lines = document.createElementNS(NS, 'svg');
+      lines.setAttribute('class', 'bp-lines'); lines.setAttribute('width', W); lines.setAttribute('height', H);
+      wrap.appendChild(lines);
+      const kx = ox, ky = oy + knotY, bb = [];
+      items.sort((a, b) => a.y - b.y).forEach(it => {
+        const t = TYPES[it.type], w = bw * (t.shape === 'dog' ? 1.4 : 1);
+        const { el, h } = makeBalloonEl(it.type, w);
+        const left = ox + it.x - w / 2, top = oy + it.y - h * .33;
+        el.style.left = left + 'px'; el.style.top = top + 'px';
+        const sx = ox + it.x, sy = t.shape === 'dog' ? top + h * .9 : top + h * .66;
+        const path = document.createElementNS(NS, 'path');
+        path.setAttribute('d', `M${sx} ${sy} Q${(sx + kx) / 2 + (sx - kx) * .15} ${(sy + ky) / 2} ${kx} ${ky}`);
+        path.setAttribute('fill', 'none'); path.setAttribute('stroke', t.str === 'none' ? '#B9C2CF' : t.str);
+        path.setAttribute('stroke-width', '1.6'); path.setAttribute('stroke-linecap', 'round');
+        lines.appendChild(path);
+        const b = { el, type: it.type, w, h, popping: false, inBunch: true, line: path };
+        byEl.set(el, b); wrap.appendChild(el); bb.push(b);
+      });
+      const tail = document.createElementNS(NS, 'path');
+      tail.setAttribute('d', `M${kx} ${ky} q -10 16 0 32 q 10 16 0 32`);
+      tail.setAttribute('fill', 'none'); tail.setAttribute('stroke', '#FF8FB8'); tail.setAttribute('stroke-width', '2.5');
+      lines.appendChild(tail);
+      const bow = document.createElement('div');
+      bow.className = 'bp-bow'; bow.textContent = '🎀'; bow.style.left = kx + 'px'; bow.style.top = ky + 'px'; bow.style.fontSize = bw * .55 + 'px';
+      wrap.appendChild(bow);
+      root.insertBefore(wrap, $('.bp-counter'));
+      bunch = { wrap, balloons: bb, H, kx, y: innerHeight + 20, t: 0, v: (innerHeight + H + 40) / FINALE_SECONDS, done: false };
+      moveBunch(0);
+    }
+    function moveBunch(dt) {
+      bunch.t += dt / 1000; bunch.y -= bunch.v * dt / 1000;
+      const x = innerWidth / 2 - bunch.kx + Math.sin(bunch.t * .9) * 28;
+      bunch.wrap.style.transformOrigin = `${bunch.kx}px ${bunch.H}px`;
+      bunch.wrap.style.transform = `translate(${x}px, ${bunch.y}px) rotate(${Math.sin(bunch.t * 1.1) * 3}deg)`;
+      if (bunch.y < -bunch.H - 20) endGame();
+    }
+    function checkBunchDone() {
+      if (!bunch || bunch.done || !bunch.balloons.every(b => b.popping)) return;
+      bunch.done = true;
+      showBanner('Wow! All popped! 🌟');
+      later(endGame, 1300);
+    }
+    function endGame() {
+      if (mode === 'end' || mode === 'idle') return;
+      mode = 'end';
+      if (bunch) { bunch.wrap.remove(); bunch = null; }
+      $('.bp-endnum').textContent = pops;
+      $('.bp-title').textContent = 'Great job, ' + CHILD_NAME + '! 🎉';
+      $('.bp-again').hidden = sessionOver;          // 3분이 끝났으면 다시하기 대신 조용히 마무리
+      const end = $('.bp-end');
+      end.hidden = false;
+      end.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400 });
+      $('.bp-title').animate([{ transform: 'scale(0) rotate(-10deg)' }, { transform: 'scale(1.15) rotate(3deg)', offset: .6 }, { transform: 'scale(1)' }], { duration: 700, easing: 'ease-out' });
+      fanfare(true);
+      const kinds = ['rainbow', 'foilGold', 'foilPink', 'heart'];
+      for (let i = 0; i < 5; i++) later(() => burst(innerWidth * (.15 + Math.random() * .7), innerHeight * (.2 + Math.random() * .5), TYPES[kinds[i % kinds.length]], 1.4, false), 250 + i * 260);
+      if (sessionOver) later(finishNow, 6000);
+    }
+
+    // ----- 소리 (공용 오디오 경로 사용) -----
+    function sfxTone(f, t0, dur, vol, type) {
+      const c = ctx(); if (!c) return;
+      const o = c.createOscillator(), g = c.createGain(), s = c.currentTime + t0;
+      o.type = type || 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(vol, s + .01); g.gain.exponentialRampToValueAtTime(.0001, s + dur);
+      o.connect(g); g.connect(master); o.start(s); o.stop(s + dur + .02);
+    }
+    function popSfx(special) {
+      const c = ctx(); if (!c) return;
+      noise(.07, 1600, .8, .9, 0);                                   // 부드러운 '뽁'
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(880, t); o.frequency.exponentialRampToValueAtTime(240, t + .12);
+      g.gain.setValueAtTime(.5, t); g.gain.exponentialRampToValueAtTime(.001, t + .16);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + .18);
+      (special ? [784, 988, 1175, 1568] : [1047, 1319]).forEach((f, i) => sfxTone(f, .09 + i * .075, .3, .25));
+    }
+    function fanfare(big) {
+      const notes = big ? [523, 659, 784, 1047, 784, 1047, 1319] : [523, 659, 784, 1047];
+      notes.forEach((f, i) => sfxTone(f, i * .12, i === notes.length - 1 ? .6 : .22, .3));
+    }
+
+    // ----- 시작·정리 -----
+    function cleanup() {
+      balloons.forEach(b => b.el.remove()); balloons = []; byEl.clear();
+      if (bunch) { bunch.wrap.remove(); bunch = null; }
+      fx.innerHTML = ''; layer.innerHTML = '';
+      $('.bp-end').hidden = true;
+      $('.bp-banner').getAnimations().forEach(a => a.cancel());
+      mode = 'idle';
+    }
+    function start() {
+      cleanup();
+      pops = 0; history = []; stageIdx = 0; sinceSpawn = 99999; sessionOver = false; last = 0;
+      setCounter(0);
+      mode = 'play';
+      if (!rafId) rafId = requestAnimationFrame(frame);
+    }
+    // 3분 세션 종료가 오면: 놀이 중이면 바로 피날레로, 피날레 중이면 끝까지 보여준 뒤 마무리
+    function sessionEnd() {
+      if (mode === 'play' && history.length) { sessionOver = true; startFinale(); return true; }   // 하나도 안 터트렸으면 바로 일반 종료
+      if (mode === 'finale-intro' || mode === 'finale') { sessionOver = true; return true; }
+      return false;
+    }
+
+    root.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      if (mode === 'end') {
+        if (e.target.closest('.bp-again') && !sessionOver) { if (!gate()) return; start(); }
+        return;
+      }
+      const el = e.target.closest('.bp-balloon');
+      if (!gate()) return;
+      if (el) pop(byEl.get(el)); else blip();
+    });
+
+    // 구름
+    for (let i = 0; i < 4; i++) {
+      const d = document.createElement('div'); d.className = 'bp-cloud';
+      const w = 120 + Math.random() * 160;
+      Object.assign(d.style, { width: w + 'px', height: w * .32 + 'px', top: (12 + Math.random() * 50) + '%',
+        animation: `bpDrift ${60 + Math.random() * 50}s linear ${-Math.random() * 90}s infinite` });
+      root.querySelector('.bp-clouds').appendChild(d);
+    }
+
+    return { start, sessionEnd };
+  })();
+  games.g1 = BP.start;
 
   // ---------- 2 큰 피아노 ----------
   var NOTES = [392, 494, 587, 784];
