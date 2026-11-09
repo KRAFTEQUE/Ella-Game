@@ -156,6 +156,16 @@
   .bp-cloud::before { width: 55%; height: 150%; left: 15%; top: -70%; }
   .bp-cloud::after { width: 40%; height: 120%; right: 12%; top: -45%; }
   @keyframes bpDrift { from { transform: translateX(-30vw); } to { transform: translateX(130vw); } }
+  #g1 .bp-hill { position: absolute; left: -10%; right: -10%; bottom: 0; height: 24%; transform: translateX(6%);
+                 background: linear-gradient(180deg, #C9F0BE, #A9E3A4); border-radius: 50% 50% 0 0 / 60px 60px 0 0; }
+  #g1 .bp-ground { position: absolute; left: -5%; right: -5%; bottom: 0; height: 18%;
+                   background: linear-gradient(180deg, #9BE0A2 0%, #7FD08F 60%, #6CC283 100%);
+                   border-radius: 50% 50% 0 0 / 34px 34px 0 0; box-shadow: inset 0 6px 0 rgba(255,255,255,.35); }
+  .bp-flower { position: absolute; line-height: 1; pointer-events: none; }
+  #g1 .bp-cart { position: absolute; left: 0; top: 0; will-change: transform; }
+  .bp-cart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .bp-sq { transform-box: fill-box; transform-origin: 50% 100%; }
+  .bp-puff { position: absolute; border-radius: 50%; background: #fff; will-change: transform, opacity; }
   .bp-balloon { position: absolute; left: 0; top: 0; will-change: transform; }
   .bp-balloon svg { display: block; width: 100%; height: auto; overflow: visible; }
   .bp-bx { transform-origin: 50% 38%; animation: bpWobble 2.4s ease-in-out infinite alternate; }
@@ -352,6 +362,9 @@
 
 <div id="g1" class="screen game" hidden>
   <div class="bp-clouds"></div>
+  <div class="bp-hill"></div>
+  <div class="bp-ground"></div>
+  <div class="bp-cart"></div>
   <div class="bp-balloons"></div>
   <div class="bp-counter"><div class="bp-pill"><span class="bp-icon">🎈</span><span class="bp-num">0</span></div><div class="bp-bar"><div class="bp-fill"></div></div></div>
   <div class="bp-fx"></div>
@@ -592,9 +605,9 @@
       { at: 18, pool: { white: 2, blue: 2, pink: 2, orange: 2, rainbow: 1, foilGold: .7, foilPink: .7, foilSilver: .7, heart: 2.5 } },
       { at: 24, pool: { white: 2, blue: 2, pink: 2, orange: 2, rainbow: 1, foilGold: .6, foilPink: .6, foilSilver: .6, heart: 2, dog: 2 } }
     ];
-    const SPEED = { base: 48, perPop: 1.5, max: 100 };      // px/초
-    const SPAWN = { base: 1900, perPop: 28, min: 1000 };    // 풍선 사이 간격 ms
-    const MAX_ON_SCREEN = 6;
+    const SPEED = { launch: 558, from: 99, to: 171 };   // 쏘아 올리는 힘 → 떠오르는 속도(px/초). 30개까지 점점 빨라짐
+    const SPAWN = { from: 1150, to: 650 };               // 풍선 사이 간격 ms
+    const MAX_ON_SCREEN = 7;
     const FINALE_SECONDS = 11;
 
     const TYPES = {
@@ -706,8 +719,9 @@
 
     const vmin = () => Math.min(innerWidth, innerHeight);
     const baseW = () => Math.max(84, Math.min(150, vmin() * 0.17));
-    const speed = () => Math.min(SPEED.max, SPEED.base + Math.min(pops, GOAL) * SPEED.perPop);
-    const spawnGap = () => Math.max(SPAWN.min, SPAWN.base - pops * SPAWN.perPop);
+    const ramp = () => Math.min(1, pops / GOAL);
+    const speed = () => SPEED.from + (SPEED.to - SPEED.from) * ramp();
+    const spawnGap = () => SPAWN.from + (SPAWN.to - SPAWN.from) * ramp();
 
     function weightedPick(pool, exclude) {
       const entries = Object.entries(pool).filter(([k]) => !exclude || !exclude(k));
@@ -726,35 +740,148 @@
       el.innerHTML = `<div class="bp-bx" style="animation-delay:${(-Math.random() * 2.4).toFixed(2)}s">${html}</div>`;
       return { el, h: w / aspect };
     }
-    function spawn() {
+    // ----- 풍선차: 굴러 들어와 멈춘 뒤 구멍 3개에서 풍선을 쏘아 올림 -----
+    const TUBES = [
+      { x: 112, a: -16, c: ['#FFF6C8','#FFD54A','#D9A21A'] },
+      { x: 200, a: 0,   c: ['#DDFFF1','#6BDDB0','#2FA57A'] },
+      { x: 288, a: 16,  c: ['#F1E8FF','#B79BFF','#7A5BD6'] }
+    ];
+    const WHEELS = [{ x: 112, y: 214 }, { x: 288, y: 214 }];
+    function cartSVG() {
+      const grad = (id, c, x0, y0, x1, y1) => `<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="${x0 + (x1 - x0) * .32}" cy="${y0 + (y1 - y0) * .25}" r="${Math.max(x1 - x0, y1 - y0) * .85}">
+        <stop offset="0" stop-color="${c[0]}"/><stop offset=".5" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></radialGradient>`;
+      let defs = grad('bpcBody', ['#FFE3EE','#FF9EC4','#DE5E93'], 28, 90, 372, 212);
+      TUBES.forEach((t, i) => { defs += grad('bpcT' + i, t.c, t.x - 30, 34, t.x + 30, 104); });
+      defs += `<radialGradient id="bpcHub" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFE9D2"/></radialGradient>
+        <radialGradient id="bpcTire" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="#9B6FA0"/><stop offset="1" stop-color="#5E3D63"/></radialGradient>
+        <clipPath id="bpcClip"><rect x="28" y="92" width="344" height="118" rx="46"/></clipPath>`;
+      const tubes = TUBES.map((t, i) => `
+        <g transform="rotate(${t.a} ${t.x} 100)"><g class="bp-sq" id="bpcTube${i}">
+          <rect x="${t.x - 27}" y="40" width="54" height="64" rx="14" fill="url(#bpcT${i})"/>
+          <rect x="${t.x - 18}" y="50" width="9" height="40" rx="4.5" fill="#fff" opacity=".55"/>
+          <ellipse cx="${t.x}" cy="41" rx="31" ry="11" fill="${t.c[0]}"/>
+          <ellipse cx="${t.x}" cy="41" rx="31" ry="11" fill="none" stroke="${t.c[2]}" stroke-opacity=".35" stroke-width="2"/>
+          <ellipse cx="${t.x}" cy="42" rx="20" ry="6.5" fill="#5B3A55"/>
+          <ellipse cx="${t.x}" cy="43.5" rx="13" ry="3.2" fill="#3B2338"/>
+        </g></g>`).join('');
+      let dots = ''; for (let x = 58; x <= 350; x += 36) dots += `<circle cx="${x}" cy="194" r="5" fill="#fff" opacity=".55"/>`;
+      const wheel = (w, i) => {
+        let spokes = '';
+        for (let k = 0; k < 6; k++) { const a = k * Math.PI / 3; spokes += `<line x1="${w.x}" y1="${w.y}" x2="${(w.x + Math.cos(a) * 24).toFixed(1)}" y2="${(w.y + Math.sin(a) * 24).toFixed(1)}" stroke="${k % 2 ? '#FF8FB8' : '#7FC8FF'}" stroke-width="7" stroke-linecap="round"/>`; }
+        return `<g id="bpcWheel${i}"><circle cx="${w.x}" cy="${w.y}" r="40" fill="url(#bpcTire)"/><circle cx="${w.x}" cy="${w.y}" r="30" fill="url(#bpcHub)"/>${spokes}
+          <circle cx="${w.x}" cy="${w.y}" r="9" fill="#FFC23A"/><circle cx="${w.x - 3}" cy="${w.y - 3}" r="3" fill="#fff" opacity=".8"/></g>
+          <path d="M${w.x - 30} ${w.y - 22} A37 37 0 0 1 ${w.x + 6} ${w.y - 36}" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="5" stroke-linecap="round"/>`;
+      };
+      return `<svg viewBox="0 0 400 270" xmlns="http://www.w3.org/2000/svg"><defs>${defs}</defs>
+        <ellipse cx="200" cy="257" rx="160" ry="11" fill="rgba(40,90,40,.22)"/>
+        <g class="bp-sq" id="bpcTop">${tubes}
+          <rect x="44" y="84" width="312" height="20" rx="10" fill="#FFF3E2"/><rect x="44" y="84" width="312" height="7" rx="3.5" fill="#fff" opacity=".8"/>
+          <rect x="28" y="92" width="344" height="118" rx="46" fill="url(#bpcBody)"/>
+          <g clip-path="url(#bpcClip)"><rect x="20" y="182" width="360" height="24" fill="#FFF0F6" opacity=".9"/>${dots}</g>
+          <ellipse cx="86" cy="113" rx="34" ry="9" transform="rotate(-8 86 113)" fill="#fff" opacity=".7"/>
+          <circle cx="56" cy="134" r="4" fill="#fff" opacity=".7"/>
+          <circle cx="366" cy="150" r="9" fill="#FFE27A"/><circle cx="364" cy="147" r="3" fill="#fff"/>
+          ${face(200, 136, 1.45)}
+        </g>${WHEELS.map(wheel).join('')}</svg>`;
+    }
+    const cartEl = root.querySelector('.bp-cart');
+    cartEl.innerHTML = cartSVG();
+    const cartSvg = cartEl.querySelector('svg');
+    let cw = 0, ck = 1, cartX = 0, cartY = 0, wheelAngle = 0, cartState = 'away', arriveT = 0, arriveFrom = 0, lastTube = -1;
+    const arriveTo = () => innerWidth / 2 - cw / 2;
+    function layoutCart() {
+      cw = Math.max(260, Math.min(520, innerWidth * .46, innerHeight * .62)); ck = cw / 400;
+      cartEl.style.width = cw + 'px';
+      const gh = innerHeight * .18;
+      cartY = innerHeight - gh + gh * .42 - 257 * ck;
+      if (cartState === 'ready') { cartX = arriveTo(); placeCart(0); }
+    }
+    function placeCart(bob) { cartEl.style.transform = `translate(${cartX}px, ${cartY + bob}px)`; }
+    function spinWheels() { WHEELS.forEach((w, i) => cartSvg.querySelector('#bpcWheel' + i).setAttribute('transform', `rotate(${wheelAngle} ${w.x} ${w.y})`)); }
+    function cartArrive() { cartState = 'away'; layoutCart(); cartState = 'arriving'; arriveT = 0; arriveFrom = -cw - 60; cartX = arriveFrom; placeCart(0); }
+    function cartJiggle(sx, sy, ms) {
+      cartSvg.querySelector('#bpcTop').animate([{ transform: 'scale(1,1)' }, { transform: `scale(${sx},${sy})`, offset: .3 },
+        { transform: `scale(${2 - sx},${2 - sy})`, offset: .6 }, { transform: 'scale(1,1)' }], { duration: ms, easing: 'ease-out' });
+    }
+    function holePoint(i) {
+      const t = TUBES[i], a = t.a * Math.PI / 180;
+      return { x: cartX + (t.x + 59 * Math.sin(a)) * ck, y: cartY + (100 - 59 * Math.cos(a)) * ck };
+    }
+    addEventListener('resize', () => { if (current === 'g1') layoutCart(); });
+
+    function spawn() {                       // 구멍 하나를 골라 풍선 발사
+      let i = Math.floor(Math.random() * 3);
+      if (i === lastTube) i = (i + 1 + Math.floor(Math.random() * 2)) % 3;
+      lastTube = i;
+      cartSvg.querySelector('#bpcTube' + i).animate([{ transform: 'scale(1,1)' }, { transform: 'scale(1.14,.8)', offset: .25 },
+        { transform: 'scale(.9,1.16)', offset: .55 }, { transform: 'scale(1,1)' }], { duration: 340, easing: 'ease-out' });
+      cartSvg.classList.add('bp-happy');
+      later(() => cartSvg.classList.remove('bp-happy'), 450);
+      later(() => { const h = holePoint(i); puff(h.x, h.y); launch(i, h); fwoomp(); }, 80);
+    }
+    function launch(i, h) {
       const type = pickType(), t = TYPES[type];
-      const w = baseW() * (t.shape === 'dog' ? 1.45 : 1);
-      const { el, h } = makeBalloonEl(type, w);
+      const w = Math.max(84, Math.min(140, vmin() * .16)) * (t.shape === 'dog' ? 1.45 : 1);
+      const { el, h: bh } = makeBalloonEl(type, w);
       layer.appendChild(el);
-      const b = { el, type, w, h, x: 12 + Math.random() * (innerWidth - w - 24), y: innerHeight + 10,
-        phase: Math.random() * Math.PI * 2, amp: 8 + Math.random() * 14, freq: .6 + Math.random() * .5,
-        vmul: .9 + Math.random() * .2, t: 0, popping: false };
+      const b = { el, type, w, h: bh, x: h.x, y: h.y, t: 0, a: TUBES[i].a + (Math.random() * 10 - 5),
+        drift: (Math.random() * 2 - 1) * 28, phase: Math.random() * 6.3, popping: false };
       balloons.push(b); byEl.set(el, b); place(b);
     }
-    function place(b) {
-      b.el.style.transform = `translate(${b.x + Math.sin(b.t * b.freq + b.phase) * b.amp}px, ${b.y}px)`;
+    function place(b) {                      // b.x, b.y = 풍선 매듭 위치
+      const s = Math.min(1, .3 + (1 - Math.pow(1 - Math.min(1, b.t / .28), 3)) * .7);
+      const sway = Math.sin(b.t * 1.1 + b.phase) * 10 * Math.min(1, b.t);
+      const knot = TYPES[b.type].shape === 'dog' ? .92 : .70;
+      b.el.style.transformOrigin = `50% ${knot * 100}%`;
+      b.el.style.transform = `translate(${b.x - b.w / 2 + sway}px, ${b.y - b.h * knot}px) scale(${s})`;
+    }
+    function puff(x, y) {
+      for (let j = 0; j < 6; j++) {
+        const p = document.createElement('div'); p.className = 'bp-puff';
+        const s = (16 + Math.random() * 16) * ck * 1.4;
+        Object.assign(p.style, { width: s + 'px', height: s + 'px', left: (x - s / 2) + 'px', top: (y - s / 2) + 'px' });
+        fx.appendChild(p);
+        const a = -Math.PI / 2 + (j / 5 - .5) * 2.2, d = (26 + Math.random() * 22) * ck * 1.4;
+        p.animate([{ transform: 'translate(0,0) scale(.4)', opacity: .95 }, { transform: `translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(1.2)`, opacity: 0 }],
+          { duration: 520, easing: 'ease-out' }).onfinish = () => p.remove();
+      }
+      for (let j = 0; j < 4; j++) {
+        const p = document.createElement('div'); p.className = 'bp-p'; p.textContent = '✦';
+        p.style.color = ['#FFD54A', '#FF8FB8', '#9CC8FF', '#B79BFF'][j]; p.style.fontSize = '16px';
+        p.style.left = x + 'px'; p.style.top = y + 'px'; fx.appendChild(p);
+        const a = -Math.PI / 2 + (j / 3 - .5) * 2.6, d = 50 + Math.random() * 20;
+        p.animate([{ transform: 'translate(-50%,-50%) scale(.3)', opacity: 1 }, { transform: `translate(-50%,-50%) translate(${Math.cos(a) * d}px,${Math.sin(a) * d}px) scale(1)`, opacity: 0 }],
+          { duration: 600, easing: 'ease-out' }).onfinish = () => p.remove();
+      }
     }
 
     function frame(now) {
       if (current !== 'g1') { cleanup(); rafId = null; return; }   // 메뉴로 나가면 정리하고 멈춤
-      const dt = Math.min(50, now - (last || now)); last = now;
-      if (mode === 'play') {
-        sinceSpawn += dt;
-        if (sinceSpawn >= spawnGap() && balloons.filter(b => !b.popping).length < MAX_ON_SCREEN) { spawn(); sinceSpawn = 0; }
-        const v = speed();
-        for (const b of balloons) {
-          if (b.popping) continue;
-          b.t += dt / 1000; b.y -= v * b.vmul * dt / 1000; place(b);
-          if (b.y < -b.h - 20) { b.el.remove(); b.gone = true; }      // 놓친 풍선: 벌점 없음
-        }
-        balloons = balloons.filter(b => !b.gone);
+      const dt = Math.min(50, now - (last || now)) / 1000; last = now;
+      if (cartState === 'arriving') {                                // 풍선차가 굴러 들어옴
+        arriveT += dt / 1.7;
+        const t = Math.min(1, arriveT), prev = cartX;
+        cartX = arriveFrom + (arriveTo() - arriveFrom) * (1 - Math.pow(1 - t, 3));
+        wheelAngle += (cartX - prev) / (40 * ck) * 180 / Math.PI; spinWheels();
+        placeCart(Math.sin(arriveT * 40) * 1.6 * (1 - t));
+        if (t >= 1) { cartState = 'ready'; cartJiggle(1.04, .93, 520); toot(); sinceSpawn = spawnGap() - 500; }
       }
-      if (mode === 'finale' && bunch) moveBunch(dt);
+      if (mode === 'play' && cartState === 'ready') {
+        sinceSpawn += dt * 1000;
+        if (sinceSpawn >= spawnGap() && balloons.filter(b => !b.popping).length < MAX_ON_SCREEN) { spawn(); sinceSpawn = 0; }
+      }
+      const F = speed();
+      for (const b of balloons) {
+        if (b.popping) continue;
+        b.t += dt;
+        b.y -= (F + (SPEED.launch - F) * Math.exp(-b.t / .32)) * dt;   // 처음엔 휙, 위에서는 둥실
+        b.x += (Math.sin(b.a * Math.PI / 180) * 280 * Math.exp(-b.t / .5) + b.drift) * dt;
+        b.x = Math.max(b.w / 2 + 8, Math.min(innerWidth - b.w / 2 - 8, b.x));
+        place(b);
+        if (b.y < -40) { b.el.remove(); b.gone = true; }              // 놓친 풍선: 벌점 없음
+      }
+      balloons = balloons.filter(b => !b.gone);
+      if (mode === 'finale' && bunch) moveBunch(dt * 1000);
       rafId = requestAnimationFrame(frame);
     }
 
@@ -990,6 +1117,15 @@
       o.connect(g); g.connect(master); o.start(t); o.stop(t + .18);
       (special ? [784, 988, 1175, 1568] : [1047, 1319]).forEach((f, i) => sfxTone(f, .09 + i * .075, .3, .25));
     }
+    function toot() { sfxTone(523, 0, .16, .3); sfxTone(659, .17, .24, .3); }   // 풍선차 도착 '빵빵'
+    function fwoomp() {                                                          // 풍선 발사 '뿅'
+      const c = ctx(); if (!c) return;
+      const o = c.createOscillator(), g = c.createGain(), t = c.currentTime;
+      o.type = 'sine'; o.frequency.setValueAtTime(260, t); o.frequency.exponentialRampToValueAtTime(820, t + .15);
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.35, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + .18);
+      o.connect(g); g.connect(master); o.start(t); o.stop(t + .2);
+      noise(.09, 900, .8, .4, 0);
+    }
     function fanfare(big) {
       const notes = big ? [523, 659, 784, 1047, 784, 1047, 1319] : [523, 659, 784, 1047];
       notes.forEach((f, i) => sfxTone(f, i * .12, i === notes.length - 1 ? .6 : .22, .3));
@@ -1009,6 +1145,7 @@
       pops = 0; history = []; stageIdx = 0; sinceSpawn = 99999; sessionOver = false; last = 0;
       setCounter(0);
       mode = 'play';
+      cartArrive();
       if (!rafId) rafId = requestAnimationFrame(frame);
     }
     // 3분 세션 종료가 오면: 놀이 중이면 바로 피날레로, 피날레 중이면 끝까지 보여준 뒤 마무리
@@ -1026,8 +1163,23 @@
       }
       const el = e.target.closest('.bp-balloon');
       if (!gate()) return;
-      if (el) pop(byEl.get(el)); else blip();
+      if (el) pop(byEl.get(el));
+      else if (e.target.closest('.bp-cart') && mode === 'play' && cartState === 'ready') {   // 풍선차를 누르면 바로 한 개
+        cartJiggle(1.05, .92, 300);
+        if (balloons.filter(b => !b.popping).length <= MAX_ON_SCREEN) { spawn(); sinceSpawn = 0; }
+      } else blip();
     });
+
+    // 땅의 꽃
+    (function () {
+      const g = root.querySelector('.bp-ground'), cols = ['#FFFFFF', '#FFD54A', '#FF8FB8', '#FFFFFF', '#B79BFF'];
+      for (let i = 0; i < 14; i++) {
+        const f = document.createElement('div'); f.className = 'bp-flower'; f.textContent = '✿';
+        f.style.color = cols[i % cols.length]; f.style.left = (3 + i * 7 + Math.random() * 3) + '%';
+        f.style.top = (30 + Math.random() * 50) + '%'; f.style.fontSize = (12 + Math.random() * 10) + 'px';
+        g.appendChild(f);
+      }
+    })();
 
     // 구름
     for (let i = 0; i < 4; i++) {
